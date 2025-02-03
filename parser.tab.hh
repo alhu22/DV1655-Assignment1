@@ -45,11 +45,11 @@
 #ifndef YY_YY_PARSER_TAB_HH_INCLUDED
 # define YY_YY_PARSER_TAB_HH_INCLUDED
 // "%code requires" blocks.
-#line 11 "parser.yy"
+#line 13 "parser.yy"
 
   #include <string>
   #include "Node.h"
-  #define USE_LEX_ONLY true //change this macro to true if you want to isolate the lexer from the parser.
+  #define USE_LEX_ONLY false //change this macro to true if you want to isolate the lexer from the parser.
 
 #line 55 "parser.tab.hh"
 
@@ -383,6 +383,7 @@ namespace yy {
     union union_type
     {
       // root
+      // statement
       // expression
       // factor
       char dummy1[sizeof (Node *)];
@@ -415,13 +416,21 @@ namespace yy {
       // NOT
       // AND
       // OR
+      // BOOLEAN
+      // MAIN
+      // STRING
       // PLUSOP
       // MINUSOP
       // MULTOP
       // INT
       // LP
       // RP
+      // length
       char dummy2[sizeof (std::string)];
+
+      // statement_list
+      // variables
+      char dummy3[sizeof (std::vector<Node*>)];
     };
 
     /// The size of the largest semantic type.
@@ -493,12 +502,16 @@ namespace yy {
     NOT = 283,                     // NOT
     AND = 284,                     // AND
     OR = 285,                      // OR
-    PLUSOP = 286,                  // PLUSOP
-    MINUSOP = 287,                 // MINUSOP
-    MULTOP = 288,                  // MULTOP
-    INT = 289,                     // INT
-    LP = 290,                      // LP
-    RP = 291                       // RP
+    BOOLEAN = 286,                 // BOOLEAN
+    MAIN = 287,                    // MAIN
+    STRING = 288,                  // STRING
+    PLUSOP = 289,                  // PLUSOP
+    MINUSOP = 290,                 // MINUSOP
+    MULTOP = 291,                  // MULTOP
+    INT = 292,                     // INT
+    LP = 293,                      // LP
+    RP = 294,                      // RP
+    length = 295                   // length
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -515,7 +528,7 @@ namespace yy {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 37, ///< Number of tokens.
+        YYNTOKENS = 41, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
@@ -548,16 +561,23 @@ namespace yy {
         S_NOT = 28,                              // NOT
         S_AND = 29,                              // AND
         S_OR = 30,                               // OR
-        S_PLUSOP = 31,                           // PLUSOP
-        S_MINUSOP = 32,                          // MINUSOP
-        S_MULTOP = 33,                           // MULTOP
-        S_INT = 34,                              // INT
-        S_LP = 35,                               // LP
-        S_RP = 36,                               // RP
-        S_YYACCEPT = 37,                         // $accept
-        S_root = 38,                             // root
-        S_expression = 39,                       // expression
-        S_factor = 40                            // factor
+        S_BOOLEAN = 31,                          // BOOLEAN
+        S_MAIN = 32,                             // MAIN
+        S_STRING = 33,                           // STRING
+        S_PLUSOP = 34,                           // PLUSOP
+        S_MINUSOP = 35,                          // MINUSOP
+        S_MULTOP = 36,                           // MULTOP
+        S_INT = 37,                              // INT
+        S_LP = 38,                               // LP
+        S_RP = 39,                               // RP
+        S_length = 40,                           // length
+        S_YYACCEPT = 41,                         // $accept
+        S_root = 42,                             // root
+        S_statement = 43,                        // statement
+        S_expression = 44,                       // expression
+        S_statement_list = 45,                   // statement_list
+        S_variables = 46,                        // variables
+        S_factor = 47                            // factor
       };
     };
 
@@ -593,6 +613,7 @@ namespace yy {
         switch (this->kind ())
     {
       case symbol_kind::S_root: // root
+      case symbol_kind::S_statement: // statement
       case symbol_kind::S_expression: // expression
       case symbol_kind::S_factor: // factor
         value.move< Node * > (std::move (that.value));
@@ -626,13 +647,22 @@ namespace yy {
       case symbol_kind::S_NOT: // NOT
       case symbol_kind::S_AND: // AND
       case symbol_kind::S_OR: // OR
+      case symbol_kind::S_BOOLEAN: // BOOLEAN
+      case symbol_kind::S_MAIN: // MAIN
+      case symbol_kind::S_STRING: // STRING
       case symbol_kind::S_PLUSOP: // PLUSOP
       case symbol_kind::S_MINUSOP: // MINUSOP
       case symbol_kind::S_MULTOP: // MULTOP
       case symbol_kind::S_INT: // INT
       case symbol_kind::S_LP: // LP
       case symbol_kind::S_RP: // RP
+      case symbol_kind::S_length: // length
         value.move< std::string > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_statement_list: // statement_list
+      case symbol_kind::S_variables: // variables
+        value.move< std::vector<Node*> > (std::move (that.value));
         break;
 
       default:
@@ -680,6 +710,18 @@ namespace yy {
       {}
 #endif
 
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, std::vector<Node*>&& v)
+        : Base (t)
+        , value (std::move (v))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const std::vector<Node*>& v)
+        : Base (t)
+        , value (v)
+      {}
+#endif
+
       /// Destroy the symbol.
       ~basic_symbol ()
       {
@@ -705,6 +747,7 @@ namespace yy {
 switch (yykind)
     {
       case symbol_kind::S_root: // root
+      case symbol_kind::S_statement: // statement
       case symbol_kind::S_expression: // expression
       case symbol_kind::S_factor: // factor
         value.template destroy< Node * > ();
@@ -738,13 +781,22 @@ switch (yykind)
       case symbol_kind::S_NOT: // NOT
       case symbol_kind::S_AND: // AND
       case symbol_kind::S_OR: // OR
+      case symbol_kind::S_BOOLEAN: // BOOLEAN
+      case symbol_kind::S_MAIN: // MAIN
+      case symbol_kind::S_STRING: // STRING
       case symbol_kind::S_PLUSOP: // PLUSOP
       case symbol_kind::S_MINUSOP: // MINUSOP
       case symbol_kind::S_MULTOP: // MULTOP
       case symbol_kind::S_INT: // INT
       case symbol_kind::S_LP: // LP
       case symbol_kind::S_RP: // RP
+      case symbol_kind::S_length: // length
         value.template destroy< std::string > ();
+        break;
+
+      case symbol_kind::S_statement_list: // statement_list
+      case symbol_kind::S_variables: // variables
+        value.template destroy< std::vector<Node*> > ();
         break;
 
       default:
@@ -1363,6 +1415,51 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
+      make_BOOLEAN (std::string v)
+      {
+        return symbol_type (token::BOOLEAN, std::move (v));
+      }
+#else
+      static
+      symbol_type
+      make_BOOLEAN (const std::string& v)
+      {
+        return symbol_type (token::BOOLEAN, v);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_MAIN (std::string v)
+      {
+        return symbol_type (token::MAIN, std::move (v));
+      }
+#else
+      static
+      symbol_type
+      make_MAIN (const std::string& v)
+      {
+        return symbol_type (token::MAIN, v);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_STRING (std::string v)
+      {
+        return symbol_type (token::STRING, std::move (v));
+      }
+#else
+      static
+      symbol_type
+      make_STRING (const std::string& v)
+      {
+        return symbol_type (token::STRING, v);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
       make_PLUSOP (std::string v)
       {
         return symbol_type (token::PLUSOP, std::move (v));
@@ -1450,6 +1547,21 @@ switch (yykind)
         return symbol_type (token::RP, v);
       }
 #endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_length (std::string v)
+      {
+        return symbol_type (token::length, std::move (v));
+      }
+#else
+      static
+      symbol_type
+      make_length (const std::string& v)
+      {
+        return symbol_type (token::length, v);
+      }
+#endif
 
 
     class context
@@ -1518,7 +1630,7 @@ switch (yykind)
     // Tables.
     // YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
     // STATE-NUM.
-    static const signed char yypact_[];
+    static const short yypact_[];
 
     // YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
     // Performed when YYTABLE does not specify something else to do.  Zero
@@ -1551,7 +1663,7 @@ switch (yykind)
 
 #if YYDEBUG
     // YYRLINE[YYN] -- Source line where rule number YYN was defined.
-    static const signed char yyrline_[];
+    static const unsigned char yyrline_[];
     /// Report on the debug stream that the rule \a r is going to be reduced.
     virtual void yy_reduce_print_ (int r) const;
     /// Print the state stack on the debug stream.
@@ -1778,9 +1890,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 16,     ///< Last index in yytable_.
-      yynnts_ = 4,  ///< Number of nonterminal symbols.
-      yyfinal_ = 7 ///< Termination state number.
+      yylast_ = 303,     ///< Last index in yytable_.
+      yynnts_ = 7,  ///< Number of nonterminal symbols.
+      yyfinal_ = 30 ///< Termination state number.
     };
 
 
@@ -1826,10 +1938,10 @@ switch (yykind)
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36
+      35,    36,    37,    38,    39,    40
     };
     // Last valid token kind.
-    const int code_max = 291;
+    const int code_max = 295;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -1848,6 +1960,7 @@ switch (yykind)
     switch (this->kind ())
     {
       case symbol_kind::S_root: // root
+      case symbol_kind::S_statement: // statement
       case symbol_kind::S_expression: // expression
       case symbol_kind::S_factor: // factor
         value.copy< Node * > (YY_MOVE (that.value));
@@ -1881,13 +1994,22 @@ switch (yykind)
       case symbol_kind::S_NOT: // NOT
       case symbol_kind::S_AND: // AND
       case symbol_kind::S_OR: // OR
+      case symbol_kind::S_BOOLEAN: // BOOLEAN
+      case symbol_kind::S_MAIN: // MAIN
+      case symbol_kind::S_STRING: // STRING
       case symbol_kind::S_PLUSOP: // PLUSOP
       case symbol_kind::S_MINUSOP: // MINUSOP
       case symbol_kind::S_MULTOP: // MULTOP
       case symbol_kind::S_INT: // INT
       case symbol_kind::S_LP: // LP
       case symbol_kind::S_RP: // RP
+      case symbol_kind::S_length: // length
         value.copy< std::string > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_statement_list: // statement_list
+      case symbol_kind::S_variables: // variables
+        value.copy< std::vector<Node*> > (YY_MOVE (that.value));
         break;
 
       default:
@@ -1922,6 +2044,7 @@ switch (yykind)
     switch (this->kind ())
     {
       case symbol_kind::S_root: // root
+      case symbol_kind::S_statement: // statement
       case symbol_kind::S_expression: // expression
       case symbol_kind::S_factor: // factor
         value.move< Node * > (YY_MOVE (s.value));
@@ -1955,13 +2078,22 @@ switch (yykind)
       case symbol_kind::S_NOT: // NOT
       case symbol_kind::S_AND: // AND
       case symbol_kind::S_OR: // OR
+      case symbol_kind::S_BOOLEAN: // BOOLEAN
+      case symbol_kind::S_MAIN: // MAIN
+      case symbol_kind::S_STRING: // STRING
       case symbol_kind::S_PLUSOP: // PLUSOP
       case symbol_kind::S_MINUSOP: // MINUSOP
       case symbol_kind::S_MULTOP: // MULTOP
       case symbol_kind::S_INT: // INT
       case symbol_kind::S_LP: // LP
       case symbol_kind::S_RP: // RP
+      case symbol_kind::S_length: // length
         value.move< std::string > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_statement_list: // statement_list
+      case symbol_kind::S_variables: // variables
+        value.move< std::vector<Node*> > (YY_MOVE (s.value));
         break;
 
       default:
@@ -2029,7 +2161,7 @@ switch (yykind)
 
 
 } // yy
-#line 2033 "parser.tab.hh"
+#line 2165 "parser.tab.hh"
 
 
 

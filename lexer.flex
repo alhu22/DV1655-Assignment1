@@ -1,6 +1,7 @@
 %top{
     #include "parser.tab.hh"
     #define YY_DECL yy::parser::symbol_type yylex()
+    YY_DECL;
     #include "Node.h"
     int lexical_errors = 0;
 }
@@ -10,9 +11,11 @@
 "while"                 { if (USE_LEX_ONLY) { printf("WHILE "); } else { return yy::parser::make_WHILE(yytext); } }
 "public"                { if (USE_LEX_ONLY) { printf("PUBLIC "); } else { return yy::parser::make_PUBLIC(yytext); } }
 "class"                 { if (USE_LEX_ONLY) { printf("CLASS "); } else { return yy::parser::make_CLASS(yytext); } }
+"main"                  { if (USE_LEX_ONLY) { printf("MAIN "); } else { return yy::parser::make_MAIN(yytext); } }
 "void"                  { if (USE_LEX_ONLY) { printf("VOID "); } else { return yy::parser::make_VOID(yytext); } }
 "int"                   { if (USE_LEX_ONLY) { printf("INT "); } else { return yy::parser::make_INT(yytext); } }
 "return"                { if (USE_LEX_ONLY) { printf("RETURN "); } else { return yy::parser::make_RETURN(yytext); } }
+"boolean"               { if (USE_LEX_ONLY) { printf("BOOLEAN "); } else { return yy::parser::make_BOOLEAN(yytext); } }
 "static"                { if (USE_LEX_ONLY) { printf("STATIC "); } else { return yy::parser::make_STATIC(yytext); } }
 "if"                    { if (USE_LEX_ONLY) { printf("IF "); } else { return yy::parser::make_IF(yytext); } }
 "else"                  { if (USE_LEX_ONLY) { printf("ELSE "); } else { return yy::parser::make_ELSE(yytext); } }
@@ -20,6 +23,9 @@
 "this"                  { if (USE_LEX_ONLY) { printf("THIS "); } else { return yy::parser::make_THIS(yytext); } }
 "true"                  { if (USE_LEX_ONLY) { printf("TRUE "); } else { return yy::parser::make_TRUE(yytext); } }
 "false"                 { if (USE_LEX_ONLY) { printf("FALSE "); } else { return yy::parser::make_FALSE(yytext); } }
+
+"length"                { if (USE_LEX_ONLY) { printf("length "); } else { return yy::parser::make_length(yytext); } }
+
 
 "=="                    { if (USE_LEX_ONLY) { printf("EQ "); } else { return yy::parser::make_EQ(yytext); } }
 "<"                     { if (USE_LEX_ONLY) { printf("LT "); } else { return yy::parser::make_LT(yytext); } }
@@ -48,5 +54,8 @@
 [ \t\n\r]+              {}
 "//"[^\n]*              {}
 .                       { if(!lexical_errors) fprintf(stderr, "Lexical errors found! See the logs below: \n"); fprintf(stderr,"\t@error at line %d. Character %s is not recognized\n", yylineno, yytext); lexical_errors = 1;}
-<<EOF>>                  {return yy::parser::make_END();}
+<<EOF>> { return yy::parser::make_END(); }
 %%
+
+
+

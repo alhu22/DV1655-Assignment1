@@ -1,0 +1,15 @@
+digraph {
+n0 [label="IfStatement:"];
+n1 [label="LogicalExpression:"];
+n2 [label="Identifier:a"];
+n1 -> n2
+n3 [label="Identifier:b"];
+n1 -> n3
+n0 -> n1
+n4 [label="BlockStatement:"];
+n5 [label="Assignment:a"];
+n6 [label="Int:10"];
+n5 -> n6
+n4 -> n5
+n0 -> n4
+}
