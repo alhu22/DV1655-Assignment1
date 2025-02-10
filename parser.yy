@@ -39,7 +39,7 @@
 
 /* Specify types for non-terminals in the grammar */
 %type <Node *> root statement expression factor MethodDeclaration ClassDeclaration VarDeclaration parameter Goal MainClass
-%type <std::list<Node*>> variables statement_list parameter_list MethodDeclaration_list  Modifiers ClassDeclaration_list expression_list
+%type <std::list<Node*>> variables statement_list parameter_list MethodDeclaration_list  Modifiers ClassDeclaration_list expression_list parameter_sequence expression_sequence
 %type <std::string> Type 
 
 
@@ -189,7 +189,7 @@ Modifiers:
 ;
 
 MethodDeclaration:
-    Modifiers Type IDENTIFIER LP parameter_list RP LBRACE statement_list RETURN expression SEMICOLON RBRACE {
+    Modifiers Type IDENTIFIER LP parameter_sequence RP LBRACE statement_list RETURN expression SEMICOLON RBRACE {
         std::cout << "Method detected: " << $3 << " of type " << $2 << std::endl;
 
         $$ = new Node("MethodDeclaration", $3, yylineno);
@@ -204,7 +204,7 @@ MethodDeclaration:
         $$->children.push_back(bodyNode);
 
     }
-    |Modifiers Type IDENTIFIER LP parameter_list RP LBRACE variables RETURN expression SEMICOLON RBRACE {
+    |Modifiers Type IDENTIFIER LP parameter_sequence RP LBRACE variables RETURN expression SEMICOLON RBRACE {
         std::cout << "Method detected: " << $3 << " of type " << $2 << std::endl;
 
         $$ = new Node("MethodDeclaration", $3, yylineno);
@@ -232,18 +232,21 @@ parameter:
 ;
 
 parameter_list:
-    /* Empty */ { 
-        $$ = std::list<Node*>(); // Create an empty list for no parameters
-    }
-    | parameter { 
+    parameter { 
         $$ = std::list<Node*>(); 
-        $$.push_back($1); // Add a single parameter
+        $$.push_back($1);
     }
     | parameter_list COMMA parameter { 
         $$ = $1; 
-        $$.push_back($3); // Append the new parameter to the list
+        $$.push_back($3);
     }
 ;
+
+parameter_sequence:
+    parameter_list { $$ = $1; } 
+    | /* Empty */ { $$ = std::list<Node*>(); }
+;
+
 
 
 /* Expressions */
@@ -296,7 +299,7 @@ expression: expression PLUSOP expression {
                 $$ = new Node("ArrayLength", "", yylineno);
                 $$->children.push_back($1);
             }
-            | expression DOT IDENTIFIER LP expression_list RP { 
+            | expression DOT IDENTIFIER LP expression_sequence RP { 
                 $$ = new Node("MethodCall", $3, yylineno);
                 $$->children.push_back($1);
 
@@ -344,18 +347,21 @@ expression: expression PLUSOP expression {
             ;
 
 expression_list:
-    /* Empty */ { 
-        $$ = std::list<Node*>(); // Create an empty list for no parameters
-    }
-    | expression { 
+    expression { 
         $$ = std::list<Node*>(); 
-        $$.push_back($1); // Add a single parameter
+        $$.push_back($1);
     }
     | expression_list COMMA expression { 
         $$ = $1; 
-        $$.push_back($3); // Append the new parameter to the list
+        $$.push_back($3);
     }
 ;
+
+expression_sequence:
+    expression_list { $$ = $1; } 
+    | /* Empty */ { $$ = std::list<Node*>(); }
+;
+
 
 
 MethodDeclaration_list:
