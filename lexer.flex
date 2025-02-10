@@ -13,7 +13,7 @@
 "class"                 { if (USE_LEX_ONLY) { printf("CLASS "); } else { return yy::parser::make_CLASS(yytext); } }
 "main"                  { if (USE_LEX_ONLY) { printf("MAIN "); } else { return yy::parser::make_MAIN(yytext); } }
 "void"                  { if (USE_LEX_ONLY) { printf("VOID "); } else { return yy::parser::make_VOID(yytext); } }
-"int"                   { if (USE_LEX_ONLY) { printf("INT "); } else { return yy::parser::make_INT(yytext); } }
+"int"                   { if (USE_LEX_ONLY) { printf("INTIGER "); } else { return yy::parser::make_INTIGER(yytext); } }
 "return"                { if (USE_LEX_ONLY) { printf("RETURN "); } else { return yy::parser::make_RETURN(yytext); } }
 "boolean"               { if (USE_LEX_ONLY) { printf("BOOLEAN "); } else { return yy::parser::make_BOOLEAN(yytext); } }
 "static"                { if (USE_LEX_ONLY) { printf("STATIC "); } else { return yy::parser::make_STATIC(yytext); } }
@@ -23,6 +23,10 @@
 "this"                  { if (USE_LEX_ONLY) { printf("THIS "); } else { return yy::parser::make_THIS(yytext); } }
 "true"                  { if (USE_LEX_ONLY) { printf("TRUE "); } else { return yy::parser::make_TRUE(yytext); } }
 "false"                 { if (USE_LEX_ONLY) { printf("FALSE "); } else { return yy::parser::make_FALSE(yytext); } }
+"float"                 { if (USE_LEX_ONLY) { printf("FLOAT "); } else { return yy::parser::make_FLOAT(yytext); } }
+"double"                { if (USE_LEX_ONLY) { printf("DOUBLE "); } else { return yy::parser::make_DOUBLE(yytext); } }
+"char"                  { if (USE_LEX_ONLY) { printf("CHAR "); } else { return yy::parser::make_CHAR(yytext); } }
+"String"                { if (USE_LEX_ONLY) { printf("STRING "); } else { return yy::parser::make_STRING(yytext); } }
 
 "length"                { if (USE_LEX_ONLY) { printf("length "); } else { return yy::parser::make_length(yytext); } }
 
@@ -48,14 +52,14 @@
 "("                     {if(USE_LEX_ONLY) {printf("LP ");} else {return yy::parser::make_LP(yytext);}}
 ")"                     {if(USE_LEX_ONLY) {printf("RP ");} else {return yy::parser::make_RP(yytext);}}
 
-[a-zA-Z][a-zA-Z0-9]*    {if(USE_LEX_ONLY) {printf("IDENTIFIER ");} else {return yy::parser::make_IDENTIFIER(yytext);}}
+[a-zA-Z][a-zA-Z0-9_]*    {if(USE_LEX_ONLY) {printf("IDENTIFIER ");} else {return yy::parser::make_IDENTIFIER(yytext);}}
 0|[1-9][0-9]*           {if(USE_LEX_ONLY) {printf("INT ");} else {return yy::parser::make_INT(yytext);}}
+
+"String"              {if(USE_LEX_ONLY) {printf("STRING ");} else {return yy::parser::make_STRING(yytext);}}
 
 [ \t\n\r]+              {}
 "//"[^\n]*              {}
 .                       { if(!lexical_errors) fprintf(stderr, "Lexical errors found! See the logs below: \n"); fprintf(stderr,"\t@error at line %d. Character %s is not recognized\n", yylineno, yytext); lexical_errors = 1;}
 <<EOF>> { return yy::parser::make_END(); }
 %%
-
-
 
