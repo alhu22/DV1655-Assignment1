@@ -8,11 +8,11 @@ class MyClass {
     public boolean Init(){
         int test;
 
-        test = this.Bar(a,); //@error - syntax (trailing comma in the list of parameters)
+        test = this.Bar(a); //@error - syntax (trailing comma in the list of parameters)
         return false;
     }
 
-    public int Bar(int a, ) {
+    public int Bar(int a) {
         return 1;
     }
 }

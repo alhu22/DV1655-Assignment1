@@ -1,0 +1,7 @@
+digraph G {
+  node [shape=box];
+  "x" [label="x: variable\nScope: method\nLine: 3"];
+  "main" [label="main: method\nScope: method\nLine: 2"];
+  "y" [label="y: variable\nScope: method\nLine: 4"];
+  "Main" [label="Main: class\nScope: global\nLine: 1"];
+}

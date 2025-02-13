@@ -32,9 +32,17 @@
 %token <std::string> length
 
 /* Operator precedence and associativity rules */
+%left OR
+%left AND
+%left EQ
+%left LT GT
 %left PLUSOP MINUSOP
 %left MULTOP
-%right ELSE
+%right NOT
+%left LBRACKET RBRACKET
+%left DOT
+%right NEW
+
 
 
 /* Specify types for non-terminals in the grammar */
@@ -63,14 +71,9 @@ Goal:
     }
 ;
 
-
 ClassDeclaration_list:
     /* Empty */ { 
         $$ = std::list<Node*>(); 
-    }
-    | ClassDeclaration { 
-        $$ = std::list<Node*>(); 
-        $$.push_back($1); 
     }
     | ClassDeclaration ClassDeclaration_list { 
         $$ = $2; 
@@ -147,7 +150,7 @@ MainClass:
         
         Node* paramNode = new Node("Parameter", "", yylineno);
         paramNode->children.push_back(new Node("Type", "String[]", yylineno));
-        paramNode->children.push_back(new Node("Identifier", $9, yylineno)); // Parameter identifier "args"
+        paramNode->children.push_back(new Node("Identifier", $13, yylineno)); // Parameter identifier "args"
         Node* paramsNode = new Node("Parameters", "", yylineno);
         paramsNode->children.push_back(paramNode);
         mainMethodNode->children.push_back(paramsNode);
@@ -368,10 +371,6 @@ MethodDeclaration_list:
     /* Empty */ { 
         $$ = std::list<Node*>(); // Create an empty list for no methods
       }
-    | MethodDeclaration { 
-          $$ = std::list<Node*>(); 
-          $$.push_back($1); // Add the single method
-    }
     | MethodDeclaration MethodDeclaration_list { 
           $$ = $2; 
           $$.insert($$.begin(), $1); // Insert the new method before the rest
@@ -402,10 +401,6 @@ VarDeclaration:
 variables:
       /* Empty */ { 
           $$ = std::list<Node*>(); // Create an empty list for no variables
-      }
-    | VarDeclaration { 
-          $$ = std::list<Node*>(); 
-          $$.push_back($1); // Add a single variable declaration
       }
     | VarDeclaration variables { 
           $$ = $2; 
