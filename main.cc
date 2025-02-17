@@ -1,5 +1,7 @@
 #include <iostream>
 #include "parser.tab.hh"
+#include "SymbolTable.h"
+
 
 extern Node *root;
 extern FILE *yyin;
@@ -62,6 +64,7 @@ int main(int argc, char **argv)
 			{
 				root->print_tree();
 				root->generate_tree();
+
 			}
 			catch (...)
 			{

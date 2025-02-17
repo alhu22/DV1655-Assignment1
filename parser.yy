@@ -32,22 +32,21 @@
 %token <std::string> length
 
 /* Operator precedence and associativity rules */
-%left OR
-%left AND
-%left EQ
-%left LT GT
+%right ASSIGN
+%left OR AND
+%left EQ LT GT
 %left PLUSOP MINUSOP
 %left MULTOP
+%left RP LP
 %right NOT
 %left LBRACKET RBRACKET
 %left DOT
-%right NEW
-
+%right ELSE
 
 
 /* Specify types for non-terminals in the grammar */
 %type <Node *> root statement expression factor MethodDeclaration ClassDeclaration VarDeclaration parameter Goal MainClass
-%type <std::list<Node*>> variables statement_list parameter_list MethodDeclaration_list  Modifiers ClassDeclaration_list expression_list parameter_sequence expression_sequence
+%type <std::list<Node*>> variables statement_list parameter_list MethodDeclaration_list  ClassDeclaration_list expression_list parameter_sequence expression_sequence Methodbody
 %type <std::string> Type 
 
 
@@ -70,16 +69,13 @@ Goal:
         }
     }
 ;
-
 ClassDeclaration_list:
-    /* Empty */ { 
-        $$ = std::list<Node*>(); 
+    /* Empty */ { $$ = std::list<Node*>(); }
+    | ClassDeclaration ClassDeclaration_list {
+        $$ = $2;
+        $$.insert($$.begin(), $1);
     }
-    | ClassDeclaration ClassDeclaration_list { 
-        $$ = $2; 
-        $$.insert($$.begin(), $1); // Insert the new class before the rest
-    }
-;
+
 
 
 Type: INTIGER LBRACKET RBRACKET { $$ = "int[]"; }
@@ -95,7 +91,7 @@ statement:  LBRACE statement_list RBRACE {
                 $$ = new Node("Block", "", yylineno);
                 $$->children = $2; // Store the list of statements inside the block
             }
-            | IF LP expression RP statement %prec IF { 
+            | IF LP expression RP statement { 
                 $$ = new Node("IfStatement", "", yylineno);
                 $$->children.push_back($3);  // Condition
                 $$->children.push_back($5);  // If-block
@@ -125,15 +121,6 @@ statement:  LBRACE statement_list RBRACE {
                 $$->children.push_back($3);  // Array index
                 $$->children.push_back($6);  // Assigned value
             }
-
-
-
-          
-            |Type IDENTIFIER SEMICOLON {
-            $$ = new Node("Declaration", $2, yylineno);
-            $$->children.push_back(new Node("Type", $1, yylineno));
-            $$->children.push_back(new Node("Identifier", $2, yylineno));
-        }
         ;
         
 MainClass:
@@ -168,62 +155,48 @@ MainClass:
 ;
 
 ClassDeclaration:
-    Modifiers CLASS IDENTIFIER LBRACE variables MethodDeclaration_list RBRACE{
-        std::cout << "Class detected: " << $3 << std::endl;
+    CLASS IDENTIFIER LBRACE variables MethodDeclaration_list RBRACE{
+        std::cout << "Class detected: " << $2 << std::endl;
 
-        $$ = new Node("ClassDeclaration", $3, yylineno);
+        $$ = new Node("ClassDeclaration", $2, yylineno);
         Node* varsNode = new Node("Variables", "", yylineno);
-        for (Node* var : $5) varsNode->children.push_back(var);
+        for (Node* var : $4) varsNode->children.push_back(var);
         $$->children.push_back(varsNode);
 
         Node* methodsNode = new Node("Methods", "", yylineno);
-        for (Node* method : $6) methodsNode->children.push_back(method);
+        for (Node* method : $5) methodsNode->children.push_back(method);
         $$->children.push_back(methodsNode);
     }
 ;
 
 
-Modifiers:
-    PUBLIC STATIC   { $$ = std::list<Node*>(); $$.push_back(new Node("Modifier", "public", yylineno)); $$.push_back(new Node("Modifier", "static", yylineno)); }
-  | STATIC PUBLIC   { $$ = std::list<Node*>(); $$.push_back(new Node("Modifier", "static", yylineno)); $$.push_back(new Node("Modifier", "public", yylineno)); }
-  | PUBLIC          { $$ = std::list<Node*>(); $$.push_back(new Node("Modifier", "public", yylineno)); }
-  | STATIC          { $$ = std::list<Node*>(); $$.push_back(new Node("Modifier", "static", yylineno)); }
-  | /* empty */     { $$ = std::list<Node*>(); } // No modifier case
+MethodDeclaration:
+    PUBLIC Type IDENTIFIER LP parameter_sequence RP LBRACE Methodbody RETURN expression SEMICOLON RBRACE {
+        std::cout << "Method detected: " << $3 << " of type " << $2 << std::endl;
+
+        $$ = new Node("MethodDeclaration", $3, yylineno);
+        $$->children.push_back(new Node("Type", $2, yylineno));
+
+        Node* paramsNode = new Node("Parameters", "", yylineno);
+        for (Node* param : $5) paramsNode->children.push_back(param);
+        $$->children.push_back(paramsNode);
+
+        Node* bodyNode = new Node("Body", "", yylineno);
+        for (Node* stmt : $8) bodyNode->children.push_back(stmt);
+        $$->children.push_back(bodyNode);
+    }   
 ;
 
-MethodDeclaration:
-    Modifiers Type IDENTIFIER LP parameter_sequence RP LBRACE statement_list RETURN expression SEMICOLON RBRACE {
-        std::cout << "Method detected: " << $3 << " of type " << $2 << std::endl;
-
-        $$ = new Node("MethodDeclaration", $3, yylineno);
-        $$->children.push_back(new Node("Type", $2, yylineno));
-
-        Node* paramsNode = new Node("Parameters", "", yylineno);
-        for (Node* param : $5) paramsNode->children.push_back(param);
-        $$->children.push_back(paramsNode);
-
-        Node* bodyNode = new Node("Body", "", yylineno);
-        for (Node* stmt : $8) bodyNode->children.push_back(stmt);
-        $$->children.push_back(bodyNode);
-
+Methodbody:
+    /* Empty */ { $$ = std::list<Node*>(); } // Empty body
+    | Methodbody VarDeclaration { 
+        $$ = $1; 
+        $$.push_back($2);
     }
-    |Modifiers Type IDENTIFIER LP parameter_sequence RP LBRACE variables RETURN expression SEMICOLON RBRACE {
-        std::cout << "Method detected: " << $3 << " of type " << $2 << std::endl;
-
-        $$ = new Node("MethodDeclaration", $3, yylineno);
-        $$->children.push_back(new Node("Type", $2, yylineno));
-
-        Node* paramsNode = new Node("Parameters", "", yylineno);
-        for (Node* param : $5) paramsNode->children.push_back(param);
-        $$->children.push_back(paramsNode);
-
-        Node* bodyNode = new Node("Body", "", yylineno);
-        for (Node* stmt : $8) bodyNode->children.push_back(stmt);
-        $$->children.push_back(bodyNode);
-
+    | Methodbody statement {
+        $$ = $1; 
+        $$.push_back($2);
     }
-    
-    
 ;
 
 parameter:
@@ -312,21 +285,6 @@ expression: expression PLUSOP expression {
                 }
                 $$->children.push_back(argsNode); // Attach argument list
             }            
-            | IDENTIFIER {
-                $$ = new Node("Identifier", $1, yylineno);
-            }
-            | INT {
-                $$ = new Node("INT", $1, yylineno);
-            }
-            | TRUE {
-                $$ = new Node("Identifier", $1, yylineno);
-            }
-            | FALSE {
-                $$ = new Node("Identifier", $1, yylineno);
-            }
-            | THIS {
-                $$ = new Node("Identifier", $1, yylineno);
-            }
             |NEW INTIGER LBRACKET expression RBRACKET {
                 $$ = new Node("Array_Instantiation", "", yylineno);
                 $$->children.push_back(new Node("Type", "int", yylineno));
@@ -336,16 +294,7 @@ expression: expression PLUSOP expression {
                 $$ = new Node("Object_Instantiation", "", yylineno);
                 $$->children.push_back(new Node("ClassName", $2, yylineno)); // Store class name
             }
-            |NOT expression {
-                $$ = new Node("Not_Expression", "", yylineno);
-                $$->children.push_back($2); // Store the negated expression
-            }
-            |LP expression RP{
-                $$ = new Node("Expression", "", yylineno);
-                $$->children.push_back($2); // Store the negated expression
-
-            }            
-
+           
             | factor { $$ = $1; }
             ;
 
