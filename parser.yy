@@ -13,6 +13,8 @@
 %code requires{
   #include <string>
   #include "Node.h"
+  #include "symbolTable.h"
+
   #define USE_LEX_ONLY false //change this macro to false if you want to isolate the lexer from the parser.
 }
 
@@ -21,6 +23,7 @@
   #define YY_DECL yy::parser::symbol_type yylex()
   YY_DECL;
   Node* root;
+  AST* ast = new AST("root", "file", "global", "classes"); // Always create an instance
   extern int yylineno;
 }
 
@@ -126,7 +129,7 @@ statement:  LBRACE statement_list RBRACE {
 MainClass:
     PUBLIC CLASS IDENTIFIER LBRACE PUBLIC STATIC VOID MAIN LP STRING LBRACKET RBRACKET IDENTIFIER RP LBRACE statement_list RBRACE RBRACE {
         // Creating a new Node for MainClass
-        $$ = new Node("MainClass", $3, yylineno); // $3 is the class name (IDENTIFIER)
+        $$ = new Node("ClassDeclaration", $3, yylineno); // $3 is the class name (IDENTIFIER)
 
         // Create a new Node for the main method
         Node* mainMethodNode = new Node("MethodDeclaration", "main", yylineno);
@@ -138,10 +141,8 @@ MainClass:
         Node* paramNode = new Node("Parameter", "", yylineno);
         paramNode->children.push_back(new Node("Type", "String[]", yylineno));
         paramNode->children.push_back(new Node("Identifier", $13, yylineno)); // Parameter identifier "args"
-        Node* paramsNode = new Node("Parameters", "", yylineno);
-        paramsNode->children.push_back(paramNode);
-        mainMethodNode->children.push_back(paramsNode);
-        
+        mainMethodNode->children.push_back(paramNode);
+                
         // Add statements (body of main method)
         Node* bodyNode = new Node("Body", "", yylineno);
         for (Node* stmt : $16) {
@@ -159,31 +160,21 @@ ClassDeclaration:
         std::cout << "Class detected: " << $2 << std::endl;
 
         $$ = new Node("ClassDeclaration", $2, yylineno);
-        Node* varsNode = new Node("Variables", "", yylineno);
-        for (Node* var : $4) varsNode->children.push_back(var);
-        $$->children.push_back(varsNode);
+        for (Node* var : $4) $$->children.push_back(var);
 
-        Node* methodsNode = new Node("Methods", "", yylineno);
-        for (Node* method : $5) methodsNode->children.push_back(method);
-        $$->children.push_back(methodsNode);
+        for (Node* method : $5) $$->children.push_back(method);
     }
 ;
 
 
 MethodDeclaration:
     PUBLIC Type IDENTIFIER LP parameter_sequence RP LBRACE Methodbody RETURN expression SEMICOLON RBRACE {
-        std::cout << "Method detected: " << $3 << " of type " << $2 << std::endl;
-
         $$ = new Node("MethodDeclaration", $3, yylineno);
         $$->children.push_back(new Node("Type", $2, yylineno));
 
-        Node* paramsNode = new Node("Parameters", "", yylineno);
-        for (Node* param : $5) paramsNode->children.push_back(param);
-        $$->children.push_back(paramsNode);
+        for (Node* param : $5) $$->children.push_back(param);
 
-        Node* bodyNode = new Node("Body", "", yylineno);
-        for (Node* stmt : $8) bodyNode->children.push_back(stmt);
-        $$->children.push_back(bodyNode);
+        for (Node* stmt : $8) $$->children.push_back(stmt);
     }   
 ;
 
