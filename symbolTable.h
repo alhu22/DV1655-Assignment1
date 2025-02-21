@@ -1,29 +1,37 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
-#include "Node.h"
+//#include "Node.h"
 #include <iostream>
 #include <list>
 
 using namespace std;
 
-
 class AST {
+	public:
+	int id, lineno;
     string type,name,scope, child;
+	Node* root;
     list<AST*> children;
-
-public:
-	AST(string t, string n, string s, string c) : type(t), name(n), scope(s), child(c) {}
+	AST(int l, string t, string n, string s, string c, Node* r) : lineno(l), type(t), name(n), scope(s), child(c), root(r) {}
 	AST(){
+		lineno = -1;
 		type = "uninitialised";
 		name = "uninitialised";
 		scope = "uninitialised";
+		child = "uninitialised";
+		root = NULL;
 	}
 
    
-    void traverseAST(Node* root, AST* parent = NULL) {
+    void traverseAST(Node* root = NULL, AST* parent = NULL) {
+
+		if (root == NULL) {
+			root = this->root;
+		}
 		
         if (root->type == "Goal") {
+			lineno = root->lineno;
 			type = "Goal";
 			name = "root";
 			scope = "global";
@@ -32,6 +40,7 @@ public:
 				child += (*i)->value + " ";
         }
 		else if (root->type == "ClassDeclaration") {
+			lineno = root->lineno;
 			name = root->value;
 			scope = "class";
 			type = "";
@@ -55,6 +64,7 @@ public:
 		}
 
 		else if (root->type == "MethodDeclaration") {
+			lineno = root->lineno;
 			name = root->value;
 			scope = "method";
 			child = "variables: ";
@@ -73,6 +83,7 @@ public:
 		}
 
 		else if (root->type == "VarDeclaration") {
+			lineno = root->lineno;
 			for (auto i = root->children.begin(); i != root->children.end(); i++) {
 				if ((*i)->type == "Type") {
 					type = (*i)->value;
@@ -84,9 +95,25 @@ public:
 			scope = "variable";
 			child = "";	
 		}
+
+		else if (root->type == "Parameter") {
+			lineno = root->lineno;
+			bool declare = false;
+			for (auto i = root->children.begin(); i != root->children.end(); i++) {
+				if ((*i)->type == "Type") {
+					type = (*i)->value;
+					declare = true;
+				}
+				else if ((*i)->type == "Identifier" && declare) {
+					name = (*i)->value;
+				}
+			}
+			scope = "Parameter";
+			child = "";
+		}
 		if (scope == "global" || scope == "class" || scope == "method") {
 			for (auto i = root->children.begin(); i != root->children.end(); i++) {
-				if ((*i)->type == "VarDeclaration" || (*i)->type == "MethodDeclaration" || (*i)->type == "ClassDeclaration") {
+				if ((*i)->type == "VarDeclaration" || (*i)->type == "MethodDeclaration" || (*i)->type == "ClassDeclaration" || (*i)->type == "Parameter") {
 					AST* child = new AST();
 					children.push_back(child);
 					child->traverseAST(*i, this);
@@ -136,8 +163,22 @@ public:
 	
 		out << "}\n";
 		out.close();
+	}
+
+	bool lookup(string name) {
 		
-		cout << "Graphviz DOT file generated: " << filename << endl;
+		for (auto i = children.begin(); i != children.end(); i++) {
+			if ((*i)->name == name) {
+				return true;
+			}
+		}
+
+		for (auto i = children.begin(); i != children.end(); i++) {
+			if ((*i)->lookup(name)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 

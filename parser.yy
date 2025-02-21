@@ -13,8 +13,6 @@
 %code requires{
   #include <string>
   #include "Node.h"
-  #include "symbolTable.h"
-
   #define USE_LEX_ONLY false //change this macro to false if you want to isolate the lexer from the parser.
 }
 
@@ -23,7 +21,6 @@
   #define YY_DECL yy::parser::symbol_type yylex()
   YY_DECL;
   Node* root;
-  AST* ast = new AST("root", "file", "global", "classes"); // Always create an instance
   extern int yylineno;
 }
 
@@ -157,8 +154,6 @@ MainClass:
 
 ClassDeclaration:
     CLASS IDENTIFIER LBRACE variables MethodDeclaration_list RBRACE{
-        std::cout << "Class detected: " << $2 << std::endl;
-
         $$ = new Node("ClassDeclaration", $2, yylineno);
         for (Node* var : $4) $$->children.push_back(var);
 

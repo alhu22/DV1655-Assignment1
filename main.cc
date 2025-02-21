@@ -1,11 +1,11 @@
 #include <iostream>
 #include "parser.tab.hh"
-// #include "symbol.h"
+#include "symbolTable.h"
+#include "semantic.h"
 
 
 extern Node *root;
 extern FILE *yyin;
-extern AST *ast;
 extern int yylineno;
 extern int lexical_errors;
 extern yy::parser::symbol_type yylex();
@@ -65,9 +65,16 @@ int main(int argc, char **argv)
 			{
 				// root->print_tree();
 				root->generate_tree();
-				ast->traverseAST(root);
+				AST *ast = new AST(-1, "Goal", "root", "global", "classes: ", root);
+				ast->traverseAST();
 				std::string filename = argv[1]; // Access the filename (mytest)
 				ast->exportToDot("symbol_tree.dot", filename);
+				// bool booll = ast->lookup("func");
+				// printf("Lookup: %d\n", booll);
+				
+				Check *check = new Check("firstvar", ast, root);
+				// check->buildDict(ast);
+				check->check_dublicate_var();
 
 			}
 			catch (...)
