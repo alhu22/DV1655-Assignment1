@@ -7,10 +7,10 @@ public class InvalidMethodCall {
 class MyClass {
     int a;
     string b;
+    string b;
     public boolean Init(){
         int test;
-        int te;
-
+        int test;
         test = this.Bar(a); //@error - syntax (trailing comma in the list of parameters)
         return false;
     }

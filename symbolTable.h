@@ -37,8 +37,8 @@ class AST {
 			scope = "global";
 			child = "classes: ";
 			for (auto i = root->children.begin(); i != root->children.end(); i++)
-				child += (*i)->value + " ";
-        }
+			child += (*i)->value + " ";
+		}
 		else if (root->type == "ClassDeclaration") {
 			lineno = root->lineno;
 			name = root->value;
@@ -165,22 +165,49 @@ class AST {
 		out.close();
 	}
 
-	bool lookup(string name) {
-		
+	// type of name
+	string lookup(string name, string class_name = "", string method_name = "") {
+		string type = "not found";
+		// cout << name << " " << class_name << " " << method_name << endl;
 		for (auto i = children.begin(); i != children.end(); i++) {
-			if ((*i)->name == name) {
-				return true;
+			if((*i)->name == class_name){
+				for (auto j = (*i)->children.begin(); j != (*i)->children.end(); j++) {
+					if ((*j)->name == method_name) {
+						for (auto k = (*j)->children.begin(); k != (*j)->children.end(); k++) {
+							if ((*k)->name == name) {
+								type = (*k)->type;
+								return type;
+							}
+						}
+					}					
+					if ((*j)->name == name) {
+						type = (*j)->type;
+						return type;
+					}
+				}
+			}
+			if (class_name == "" && method_name == "") {
+				if ((*i)->name == name) {
+					type = (*i)->type;
+					return type;
+				}
+				for (auto j = (*i)->children.begin(); j != (*i)->children.end(); j++) {
+					for (auto k = (*j)->children.begin(); k != (*j)->children.end(); k++) {
+						if ((*k)->name == name) {
+							type = (*k)->type;
+							return type;
+						}
+					}
+					if ((*j)->name == name) {
+						type = (*j)->type;
+						return type;
+					}
+				}
 			}
 		}
-
-		for (auto i = children.begin(); i != children.end(); i++) {
-			if ((*i)->lookup(name)) {
-				return true;
-			}
-		}
-		return false;
+		return type;
 	}
-	
+		
 
 };
 

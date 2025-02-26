@@ -69,12 +69,11 @@ int main(int argc, char **argv)
 				ast->traverseAST();
 				std::string filename = argv[1]; // Access the filename (mytest)
 				ast->exportToDot("symbol_tree.dot", filename);
-				// bool booll = ast->lookup("func");
-				// printf("Lookup: %d\n", booll);
 				
 				Check *check = new Check("firstvar", ast, root);
-				// check->buildDict(ast);
 				check->check_dublicate_var();
+				check->verify_identifiers();
+				check->type_cheking();
 
 			}
 			catch (...)

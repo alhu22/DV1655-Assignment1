@@ -8,6 +8,8 @@
 %token <std::string> IDENTIFIER EQ LT GT LBRACE RBRACE SEMICOLON LBRACKET RBRACKET ASSIGN DOT COMMA NOT AND OR 
 %token <std::string> BOOLEAN MAIN STRING INTIGER
 
+%type <int> lineno
+
 
 /* Required code included before the parser definition begins */
 %code requires{
@@ -54,7 +56,6 @@
 /* Grammar rules section */
 %%
 
-
 root: Goal { root = $1; };
 
 
@@ -84,6 +85,9 @@ Type: INTIGER LBRACKET RBRACKET { $$ = "int[]"; }
     | IDENTIFIER            { $$ = $1; }  // Custom class type
 ;
 
+lineno:
+    /* Empty */ { $$ = yylineno; }
+;
 
 
 /* Define statements */
@@ -113,20 +117,22 @@ statement:  LBRACE statement_list RBRACE {
                 $$->children.push_back($3); // Attach the expression being printed
             }
             | IDENTIFIER ASSIGN expression SEMICOLON { 
-                $$ = new Node("Assignment", $1, yylineno);
+                $$ = new Node("Assignment", "", yylineno);
+                $$->children.push_back(new Node("Identifier", $1, yylineno));  // Assigned expression
                 $$->children.push_back($3);  // Assigned expression
             }
             | IDENTIFIER LBRACKET expression RBRACKET ASSIGN expression SEMICOLON { 
-                $$ = new Node("ArrayAssignment", $1, yylineno);
+                $$ = new Node("ArrayAssignment", "", yylineno);
+                $$->children.push_back(new Node("Identifier", $1, yylineno)); 
                 $$->children.push_back($3);  // Array index
                 $$->children.push_back($6);  // Assigned value
             }
         ;
         
 MainClass:
-    PUBLIC CLASS IDENTIFIER LBRACE PUBLIC STATIC VOID MAIN LP STRING LBRACKET RBRACKET IDENTIFIER RP LBRACE statement_list RBRACE RBRACE {
+    PUBLIC CLASS IDENTIFIER lineno LBRACE PUBLIC STATIC VOID MAIN LP STRING LBRACKET RBRACKET IDENTIFIER RP LBRACE statement_list RBRACE RBRACE {
         // Creating a new Node for MainClass
-        $$ = new Node("ClassDeclaration", $3, yylineno); // $3 is the class name (IDENTIFIER)
+        $$ = new Node("ClassDeclaration", $3, $4); // $3 is the class name (IDENTIFIER)
 
         // Create a new Node for the main method
         Node* mainMethodNode = new Node("MethodDeclaration", "main", yylineno);
@@ -137,15 +143,12 @@ MainClass:
         
         Node* paramNode = new Node("Parameter", "", yylineno);
         paramNode->children.push_back(new Node("Type", "String[]", yylineno));
-        paramNode->children.push_back(new Node("Identifier", $13, yylineno)); // Parameter identifier "args"
+        paramNode->children.push_back(new Node("Identifier", $14, yylineno)); // Parameter identifier "args"
         mainMethodNode->children.push_back(paramNode);
                 
-        // Add statements (body of main method)
-        Node* bodyNode = new Node("Body", "", yylineno);
-        for (Node* stmt : $16) {
-            bodyNode->children.push_back(stmt);
+        for (Node* stmt : $17) {
+            mainMethodNode->children.push_back(stmt);
         }
-        mainMethodNode->children.push_back(bodyNode);
 
         // Adding the method to the class node
         $$->children.push_back(mainMethodNode);
@@ -153,23 +156,23 @@ MainClass:
 ;
 
 ClassDeclaration:
-    CLASS IDENTIFIER LBRACE variables MethodDeclaration_list RBRACE{
-        $$ = new Node("ClassDeclaration", $2, yylineno);
-        for (Node* var : $4) $$->children.push_back(var);
+    CLASS IDENTIFIER lineno LBRACE variables MethodDeclaration_list RBRACE{
+        $$ = new Node("ClassDeclaration", $2, $3);
+        for (Node* var : $5) $$->children.push_back(var);
 
-        for (Node* method : $5) $$->children.push_back(method);
+        for (Node* method : $6) $$->children.push_back(method);
     }
 ;
 
 
 MethodDeclaration:
-    PUBLIC Type IDENTIFIER LP parameter_sequence RP LBRACE Methodbody RETURN expression SEMICOLON RBRACE {
-        $$ = new Node("MethodDeclaration", $3, yylineno);
+    PUBLIC Type IDENTIFIER lineno LP parameter_sequence RP LBRACE Methodbody RETURN expression SEMICOLON RBRACE {
+        $$ = new Node("MethodDeclaration", $3, $4);
         $$->children.push_back(new Node("Type", $2, yylineno));
 
-        for (Node* param : $5) $$->children.push_back(param);
+        for (Node* param : $6) $$->children.push_back(param);
 
-        for (Node* stmt : $8) $$->children.push_back(stmt);
+        for (Node* stmt : $9) $$->children.push_back(stmt);
     }   
 ;
 
@@ -262,14 +265,13 @@ expression: expression PLUSOP expression {
                 $$->children.push_back($1);
             }
             | expression DOT IDENTIFIER LP expression_sequence RP { 
-                $$ = new Node("MethodCall", $3, yylineno);
+                $$ = new Node("MethodCall", "", yylineno);
+                $$->children.push_back(new Node("Identifier", $3, yylineno));
                 $$->children.push_back($1);
 
-                Node* argsNode = new Node("Arguments", "", yylineno);
                 for (Node* arg : $5) {  // Iterate over list
-                    argsNode->children.push_back(arg);
+                    $$->children.push_back(arg);
                 }
-                $$->children.push_back(argsNode); // Attach argument list
             }            
             |NEW INTIGER LBRACKET expression RBRACKET {
                 $$ = new Node("Array_Instantiation", "", yylineno);
@@ -278,7 +280,7 @@ expression: expression PLUSOP expression {
             }
             |NEW IDENTIFIER LP RP {
                 $$ = new Node("Object_Instantiation", "", yylineno);
-                $$->children.push_back(new Node("ClassName", $2, yylineno)); // Store class name
+                $$->children.push_back(new Node("Identifier", $2, yylineno)); // Store class name
             }
            
             | factor { $$ = $1; }
