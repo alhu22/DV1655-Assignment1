@@ -1,7 +1,9 @@
 #include <iostream>
 #include "parser.tab.hh"
-#include "symbolTable.h"
-#include "semantic.h"
+// #include "symbolTable.h"
+// #include "semantic.h"
+#include "table.h"
+#include "check.h"
 
 
 extern Node *root;
@@ -66,14 +68,23 @@ int main(int argc, char **argv)
 				// root->print_tree();
 				root->generate_tree();
 				AST *ast = new AST(-1, "Goal", "root", "global", "classes: ", root);
-				ast->traverseAST();
-				std::string filename = argv[1]; // Access the filename (mytest)
-				ast->exportToDot("symbol_tree.dot", filename);
+				ast->traverse();
 				
 				Check *check = new Check("firstvar", ast, root);
-				check->check_dublicate_var();
-				check->verify_identifiers();
-				check->type_cheking();
+				// check->check_dublicate_var();
+				// check->ArrayAssignment();
+				// check->verify_identifiers();
+				// check->type_cheking();
+				
+				// check->check_dublicate_method_class();
+				check->check();
+				// check->ArrayAssignment();
+
+				std::string filename = argv[1]; // Access the filename (mytest)
+				ast->exportToDot("symbol_tree.dot", filename);
+
+
+
 
 			}
 			catch (...)

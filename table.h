@@ -1,5 +1,5 @@
-#ifndef SYMBOL_H
-#define SYMBOL_H
+#ifndef SYMBOLTABEL_H
+#define SYMBOLTABLE_H
 
 //#include "Node.h"
 #include <iostream>
@@ -13,104 +13,65 @@ class AST {
     string type,name,scope, child, value;
 	Node* root;
     list<AST*> children;
-	AST(int l, string t, string n, string s, string c, string v, Node* r) : lineno(l), type(t), name(n), scope(s), child(c), value(v), root(r) {}
+	AST(int l, string t, string n, string s, string c, Node* r) : lineno(l), type(t), name(n), scope(s), child(c),root(r) {}
 	AST(){
 		lineno = -1;
 		type = "uninitialised";
 		name = "uninitialised";
 		scope = "uninitialised";
 		child = "uninitialised";
-		value = "uninitialised";
 		root = NULL;
 	}
 
-   
-    void traverseAST(Node* root = NULL, AST* parent = NULL) {
 
-		if (root == NULL) {
-			root = this->root;
+    void traverse(Node* node=NULL, AST* ast=NULL){
+        if (node == NULL) {
+			node = root;
 		}
-		
-        if (root->type == "Goal") {
-			lineno = root->lineno;
+
+        if (node->type == "Goal") {
+			lineno = node->lineno;
 			type = "Goal";
 			name = "root";
 			scope = "global";
 			child = "classes: ";
-			for (auto i = root->children.begin(); i != root->children.end(); i++)
+			for (auto i = node->children.begin(); i != node->children.end(); i++)
 			child += (*i)->value + " ";
 		}
-		else if (root->type == "ClassDeclaration") {
-			lineno = root->lineno;
-			name = root->value;
+		else if (node->type == "ClassDeclaration") {
+			lineno = node->lineno;
+			name = node->value;
 			scope = "class";
 			type = "";
 			child = "methods: ";
-			for (auto i = root->children.begin(); i != root->children.end(); i++) {
+			for (auto i = node->children.begin(); i != node->children.end(); i++) {
 				if ((*i)->type == "MethodDeclaration") {
 					child += (*i)->value + " ";
 				}
 			}
-			child += "\n";
-			child += "variables: ";
-			for (auto i = root->children.begin(); i != root->children.end(); i++) {
-				if ((*i)->type == "VarDeclaration") {
-					for (auto j = (*i)->children.begin(); j != (*i)->children.end(); j++){
-						if ((*j)->type == "Identifier") {
-							child += (*j)->value + " ";
-						}
-					}
-				}
-			}
-		}
+            child += "\n";
 
-		else if (root->type == "MethodDeclaration") {
-			lineno = root->lineno;
-			name = root->value;
-			scope = "method";
-			child = "variables: ";
-			for (auto i = root->children.begin(); i != root->children.end(); i++) {
-				if ((*i)->type == "Type") {
-					type = (*i)->value;
-				}
-				if ((*i)->type == "VarDeclaration") {
-					for (auto j = (*i)->children.begin(); j != (*i)->children.end(); j++){
-						if ((*j)->type == "Identifier") {
-							child += (*j)->value + " ";
-						}
-					}
-				}
-			}
-		}
 
-		else if (root->type == "VarDeclaration") {
-			lineno = root->lineno;
-			auto i = root->children.begin();
-			name = (*i)->value;
-			type = (*i)->type;
-			scope = "variable";
-			child = "";	
-		}
+        }else if (node->type == "MethodDeclaration") {
+            lineno = node->lineno;
+            name = node->value;
+            scope = "method";
+            child = "variables: ";
+			auto i = node->children.begin();
+			type = (*i)->value;
+        }
 
-		else if (root->type == "Parameter") {
-			lineno = root->lineno;
-			auto i = root->children.begin();
-			name = (*i)->value;
-			type = (*i)->type;
-			scope = "Parameter";
-			child = "";
-		}
-		if (scope == "global" || scope == "class" || scope == "method") {
-			for (auto i = root->children.begin(); i != root->children.end(); i++) {
-				if ((*i)->type == "VarDeclaration" || (*i)->type == "MethodDeclaration" || (*i)->type == "ClassDeclaration" || (*i)->type == "Parameter") {
+        if (scope == "global" || scope == "class" || scope == "method") {
+			for (auto i = node->children.begin(); i != node->children.end(); i++) {
+				if ((*i)->type == "MethodDeclaration" || (*i)->type == "ClassDeclaration") {
 					AST* child = new AST();
 					children.push_back(child);
-					child->traverseAST(*i, this);
+					child->traverse(*i, this);
 				}
 			}
 		}
     }
-
+    
 	void generateDOT(AST* node, ofstream &out, const string& inputFilename) {
 		if (!node) return;
 	
@@ -154,14 +115,9 @@ class AST {
 		out.close();
 	}
 
-	// a function returning An AST node adress
-
-
-
 	// type of name
 	string lookup(string name, string class_name = "", string method_name = "") {
 		string type = "not found";
-		// cout << name << " " << class_name << " " << method_name << endl;
 		for (auto i = children.begin(); i != children.end(); i++) {
 			if((*i)->name == class_name){
 				for (auto j = (*i)->children.begin(); j != (*i)->children.end(); j++) {  // each element method or variable
@@ -201,6 +157,20 @@ class AST {
 		return type;
 	}
 
-};
+	string find(string name, string scope){
+		string type = "not found";
+		for (auto i = children.begin(); i != children.end(); i++) {
+			if ((*i)->name == name && (*i)->scope == scope) {
+				type = (*i)->type;
+				return type;
+			}
+			type = (*i)->find(name, scope);
+		}
+		return type;
+	}
 
-#endif
+
+
+
+};
+#endif // SYMBOLTABLE_H

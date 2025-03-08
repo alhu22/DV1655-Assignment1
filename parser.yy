@@ -142,8 +142,8 @@ MainClass:
         mainMethodNode->children.push_back(mainMethodType);
         
         Node* paramNode = new Node("Parameter", "", yylineno);
-        paramNode->children.push_back(new Node("Type", "String[]", yylineno));
-        paramNode->children.push_back(new Node("Identifier", $14, yylineno)); // Parameter identifier "args"
+        paramNode->children.push_back(new Node("String[]",$14, yylineno));
+        //paramNode->children.push_back(new Node("Identifier", $14, yylineno)); // Parameter identifier "args"
         mainMethodNode->children.push_back(paramNode);
                 
         for (Node* stmt : $17) {
@@ -173,6 +173,11 @@ MethodDeclaration:
         for (Node* param : $6) $$->children.push_back(param);
 
         for (Node* stmt : $9) $$->children.push_back(stmt);
+        
+        Node* paramNode = new Node("Parameter", "", yylineno);
+
+        $$->children.push_back($11);
+
     }   
 ;
 
@@ -191,8 +196,8 @@ Methodbody:
 parameter:
     Type IDENTIFIER {
         $$ = new Node("Parameter", "", yylineno);
-        $$->children.push_back(new Node("Type", $1, yylineno));
-        $$->children.push_back(new Node("Identifier", $2, yylineno));
+        $$->children.push_back(new Node($1, $2, yylineno));
+        //$$->children.push_back(new Node("Identifier", $2, yylineno));
     } 
 ;
 
@@ -329,8 +334,8 @@ statement_list:
 VarDeclaration:
     Type IDENTIFIER SEMICOLON {
         $$ = new Node("VarDeclaration", "", yylineno);
-        $$->children.push_back(new Node("Type", $1, yylineno));
-        $$->children.push_back(new Node("Identifier", $2, yylineno));
+        $$->children.push_back(new Node($1, $2, yylineno));
+        //$$->children.push_back(new Node("Identifier", $2, yylineno));
     }
 ;
 
@@ -345,7 +350,7 @@ variables:
       }
 ;
 
-factor:     INT           { $$ = new Node("Int", $1, yylineno); }
+factor:     INT           { $$ = new Node("int", $1, yylineno); }
             | LP expression RP { $$ = $2; }
             | IDENTIFIER { $$ = new Node("Identifier", $1, yylineno); }
             | MINUSOP factor { 
@@ -356,7 +361,7 @@ factor:     INT           { $$ = new Node("Int", $1, yylineno); }
                 $$ = new Node("LogicalNot", "", yylineno);
                 $$->children.push_back($2);
             }
-            | TRUE { $$ = new Node("Boolean", "true", yylineno); }
-            | FALSE { $$ = new Node("Boolean", "false", yylineno); }
+            | TRUE { $$ = new Node("boolean", "true", yylineno); }
+            | FALSE { $$ = new Node("boolean", "false", yylineno); }
             | THIS { $$ = new Node("This", "this", yylineno); }
             ;

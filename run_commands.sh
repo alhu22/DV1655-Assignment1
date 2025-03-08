@@ -1,3 +1,4 @@
 make clean
 make
-./compiler test_files/semantic_errors/InvalidArrayInteger.java
+python testScript.py -semantic -valid
+./compiler test_files/semantic_errors/Duplicateidentifier.java

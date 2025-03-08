@@ -19,7 +19,7 @@ class A {
         return this;
     }
 
-    public int[] a2() { // @error - semantic (type mismatch)
+    public int[] a2() { // @error - semantic (type mismatch) 
         int a;
         a[0] = 2; // @error - semantic (trying to use int as int array)
         return a;
