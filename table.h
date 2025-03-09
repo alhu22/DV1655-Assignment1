@@ -59,11 +59,19 @@ class AST {
             child = "variables: ";
 			auto i = node->children.begin();
 			type = (*i)->value;
-        }
+        }else if (node->type == "Parameter") {
+			lineno = node->lineno;
+			auto i = node->children.begin();
+			name = (*i)->value;
+			scope = "Parameter";
+			type = (*i)->type;
+			child = "";
+		}
+
 
         if (scope == "global" || scope == "class" || scope == "method") {
 			for (auto i = node->children.begin(); i != node->children.end(); i++) {
-				if ((*i)->type == "MethodDeclaration" || (*i)->type == "ClassDeclaration") {
+				if ((*i)->type == "MethodDeclaration" || (*i)->type == "ClassDeclaration" || (*i)->type == "Parameter") {
 					AST* child = new AST();
 					children.push_back(child);
 					child->traverse(*i, this);
@@ -157,17 +165,19 @@ class AST {
 		return type;
 	}
 
-	string find(string name, string scope){
-		string type = "not found";
+	AST* find(string name, string scope) {
 		for (auto i = children.begin(); i != children.end(); i++) {
 			if ((*i)->name == name && (*i)->scope == scope) {
-				type = (*i)->type;
-				return type;
+				return *i; 
 			}
-			type = (*i)->find(name, scope);
+			AST* node = (*i)->find(name, scope);
+			if (node) {
+				return node;
+			}
 		}
-		return type;
+		return nullptr;  // Return nullptr if not found
 	}
+	
 
 
 
