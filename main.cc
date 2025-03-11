@@ -76,9 +76,7 @@ int main(int argc, char **argv)
 				// check->verify_identifiers();
 				// check->type_cheking();
 				
-				// check->check_dublicate_method_class();
 				check->check();
-				// check->ArrayAssignment();
 
 				std::string filename = argv[1]; // Access the filename (mytest)
 				ast->exportToDot("symbol_tree.dot", filename);

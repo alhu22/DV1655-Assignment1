@@ -174,7 +174,6 @@ MethodDeclaration:
 
         for (Node* stmt : $9) $$->children.push_back(stmt);
         
-        Node* paramNode = new Node("Parameter", "", yylineno);
 
         $$->children.push_back($11);
 
