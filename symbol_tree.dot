@@ -1,0 +1,43 @@
+digraph AST {
+  rankdir=TB;
+"0x5622fb1bc9d0" [label="File name: test_files/semantic_errors/InvalidOperations.java\n\nclasses: InvalidOperations MyClass ClassDatatest ", shape=box];
+"0x5622fb1bc9d0" -> "0x5622fb1bcad0";
+"0x5622fb1bcad0" [label="name: InvalidOperations\ntype: \nscope: class\n\nmethods: main 
+", shape=box];
+"0x5622fb1bcad0" -> "0x5622fb1bcb80";
+"0x5622fb1bcb80" [label="name: main\ntype: void\nscope: method\n\nvariables: a i1 i2 b1 b2 ia1 ia2 c1 c2 ", shape=box];
+"0x5622fb1bcb80" -> "0x5622fb1bcc30";
+"0x5622fb1bcc30" [label="name: a\ntype: String[]\nscope: Parameter\n\n", shape=box];
+"0x5622fb1bcb80" -> "0x5622fb1bd350";
+"0x5622fb1bd350" [label="name: a\ntype: String[]\nscope: variable\n\n", shape=box];
+"0x5622fb1bc9d0" -> "0x5622fb1bcd00";
+"0x5622fb1bcd00" [label="name: MyClass\ntype: \nscope: class\n\nmethods: semantically_incorrect_expressions operator_test_work 
+", shape=box];
+"0x5622fb1bcd00" -> "0x5622fb1bcef0";
+"0x5622fb1bcef0" [label="name: semantically_incorrect_expressions\ntype: boolean\nscope: method\n\nvariables: ", shape=box];
+"0x5622fb1bcd00" -> "0x5622fb1bcfa0";
+"0x5622fb1bcfa0" [label="name: operator_test_work\ntype: boolean\nscope: method\n\nvariables: trash ", shape=box];
+"0x5622fb1bcd00" -> "0x5622fb1bd420";
+"0x5622fb1bd420" [label="name: i1\ntype: int\nscope: variable\n\n", shape=box];
+"0x5622fb1bcd00" -> "0x5622fb1bd500";
+"0x5622fb1bd500" [label="name: i2\ntype: int\nscope: variable\n\n", shape=box];
+"0x5622fb1bcd00" -> "0x5622fb1bd5d0";
+"0x5622fb1bd5d0" [label="name: b1\ntype: boolean\nscope: variable\n\n", shape=box];
+"0x5622fb1bcd00" -> "0x5622fb1bd6a0";
+"0x5622fb1bd6a0" [label="name: b2\ntype: boolean\nscope: variable\n\n", shape=box];
+"0x5622fb1bcd00" -> "0x5622fb1bd770";
+"0x5622fb1bd770" [label="name: ia1\ntype: int[]\nscope: variable\n\n", shape=box];
+"0x5622fb1bcd00" -> "0x5622fb1bd840";
+"0x5622fb1bd840" [label="name: ia2\ntype: int[]\nscope: variable\n\n", shape=box];
+"0x5622fb1bcd00" -> "0x5622fb1bd960";
+"0x5622fb1bd960" [label="name: c1\ntype: ClassDatatest\nscope: variable\n\n", shape=box];
+"0x5622fb1bcd00" -> "0x5622fb1bda30";
+"0x5622fb1bda30" [label="name: c2\ntype: ClassDatatest\nscope: variable\n\n", shape=box];
+"0x5622fb1bc9d0" -> "0x5622fb1bd0a0";
+"0x5622fb1bd0a0" [label="name: ClassDatatest\ntype: \nscope: class\n\nmethods: get_trash 
+", shape=box];
+"0x5622fb1bd0a0" -> "0x5622fb1bd1a0";
+"0x5622fb1bd1a0" [label="name: get_trash\ntype: int[]\nscope: method\n\nvariables: ", shape=box];
+"0x5622fb1bd0a0" -> "0x5622fb1be510";
+"0x5622fb1be510" [label="name: trash\ntype: int[]\nscope: variable\n\n", shape=box];
+}

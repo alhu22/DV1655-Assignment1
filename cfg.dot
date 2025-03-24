@@ -1,0 +1,8 @@
+digraph {
+graph [splines=ortho]
+node [shape=box]
+    block_0 [label="block_0\n :=  param a\n :=  new MyClass\nresult := call MyClass.semantically_incorrect_expressions, 0\n :=  print result\n"];
+    block_1 [label="block_1\n_t0 := i1 + b1\n_t1 := i1 + ia1\n_t2 := i1 + c1\n_t3 := b1 + b1\n_t4 := ia1 + ia1\n_t5 := ia1 + \n_t6 := c1 + c1\n_t7 := c1 && c1\n_t8 := c1 || c1\n_t9 := c1 < c1\n_t10 := b1 + b1\n_t11 := b1 + ia1\n_t12 := b1 && ia1\n_t13 := b1 == c1\n_t14 := ia1 + ia2\n_t15 := ia1 && ia2\n_t16 := b1 < b2\nb1 := !i1  \nreturn :=   true\n"];
+    block_2 [label="block_2\n_t17 := i1 + i2\n_t18 :=  + \n_t19 :=  + i2\n_t20 := b1 && b2\n_t21 := i1 < i2\nreturn :=   true\n"];
+    block_3 [label="block_3\nreturn :=   trash\n"];
+}

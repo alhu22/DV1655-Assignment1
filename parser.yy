@@ -174,8 +174,9 @@ MethodDeclaration:
 
         for (Node* stmt : $9) $$->children.push_back(stmt);
         
-
-        $$->children.push_back($11);
+        Node* returnStat = new Node("Return", "", yylineno);
+        returnStat->children.push_back($11);
+        $$->children.push_back(returnStat);
 
     }   
 ;
@@ -196,7 +197,6 @@ parameter:
     Type IDENTIFIER {
         $$ = new Node("Parameter", "", yylineno);
         $$->children.push_back(new Node($1, $2, yylineno));
-        //$$->children.push_back(new Node("Identifier", $2, yylineno));
     } 
 ;
 
@@ -220,42 +220,42 @@ parameter_sequence:
 
 /* Expressions */
 expression: expression PLUSOP expression { 
-                            $$ = new Node("AddExpression", "", yylineno);
+                            $$ = new Node("PLUSExpression", "+", yylineno);
                             $$->children.push_back($1);
                             $$->children.push_back($3);
                           }
             | expression MINUSOP expression {
-                            $$ = new Node("SubExpression", "", yylineno);
+                            $$ = new Node("SUBExpression", "-", yylineno);
                             $$->children.push_back($1);
                             $$->children.push_back($3);
                           }
             | expression MULTOP expression {
-                            $$ = new Node("MultExpression", "", yylineno);
+                            $$ = new Node("MULExpression", "*", yylineno);
                             $$->children.push_back($1);
                             $$->children.push_back($3);
                           }
             | expression AND expression { 
-                $$ = new Node("LogicalExpression", "", yylineno);
+                $$ = new Node("LogicalExpression", "&&", yylineno);
                 $$->children.push_back($1);
                 $$->children.push_back($3);
             }
             | expression OR expression { 
-                $$ = new Node("LogicalExpression", "", yylineno);
+                $$ = new Node("LogicalExpression", "||", yylineno);
                 $$->children.push_back($1);
                 $$->children.push_back($3);
             }
             | expression EQ expression { 
-                $$ = new Node("LogicalExpression", "", yylineno);
+                $$ = new Node("LogicalExpression", "==", yylineno);
                 $$->children.push_back($1);
                 $$->children.push_back($3);
             }
             | expression LT expression { 
-                $$ = new Node("RelationalExpression", "", yylineno);
+                $$ = new Node("RelationalExpression", "<", yylineno);
                 $$->children.push_back($1);
                 $$->children.push_back($3);
             }
             | expression GT expression { 
-                $$ = new Node("RelationalExpression", "", yylineno);
+                $$ = new Node("RelationalExpression", ">", yylineno);
                 $$->children.push_back($1);
                 $$->children.push_back($3);
             }
@@ -357,7 +357,7 @@ factor:     INT           { $$ = new Node("int", $1, yylineno); }
                 $$->children.push_back($2); 
             }
             | NOT factor {
-                $$ = new Node("LogicalNot", "", yylineno);
+                $$ = new Node("LogicalNot", "!", yylineno);
                 $$->children.push_back($2);
             }
             | TRUE { $$ = new Node("boolean", "true", yylineno); }

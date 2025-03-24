@@ -1,9 +1,8 @@
 #include <iostream>
 #include "parser.tab.hh"
-// #include "symbolTable.h"
-// #include "semantic.h"
-#include "table.h"
-#include "check.h"
+#include "symbolTable.h"
+#include "semanticAnalys.h"
+#include "tac.h"
 
 
 extern Node *root;
@@ -67,24 +66,23 @@ int main(int argc, char **argv)
 			{
 				// root->print_tree();
 				root->generate_tree();
-				AST *ast = new AST(-1, "Goal", "root", "global", "classes: ", root);
-				ast->traverse();
+				ST *st = new ST(-1, "Goal", "root", "global", "classes: ", root);
+				st->traverse();
 				
-				Check *check = new Check("firstvar", ast, root);
-				// check->check_dublicate_var();
-				// check->ArrayAssignment();
-				// check->verify_identifiers();
-				// check->type_cheking();
-				
+				// Semantic Analysis
+				Check *check = new Check(st, root);
 				check->check();
 
+				// Symbol Table
 				std::string filename = argv[1]; // Access the filename (mytest)
-				ast->exportToDot("symbol_tree.dot", filename);
+				st->exportToDot("symbol_tree.dot", filename);
 
-
-
+				// Three Address Code
+				CFG* cfg = new CFG();
+				cfg->traverse(root, st);
 
 			}
+
 			catch (...)
 			{
 				errCode = errCodes::AST_ERROR;

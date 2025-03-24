@@ -7,14 +7,14 @@
 
 using namespace std;
 
-class AST {
+class ST {
 	public:
 	int id, lineno;
-    string type,name,scope, child, value;
+    string type,name,scope, child;
 	Node* root;
-    list<AST*> children;
-	AST(int l, string t, string n, string s, string c, Node* r) : lineno(l), type(t), name(n), scope(s), child(c),root(r) {}
-	AST(){
+    list<ST*> children;
+	ST(int l, string t, string n, string s, string c, Node* r) : lineno(l), type(t), name(n), scope(s), child(c),root(r) {}
+	ST(){
 		lineno = -1;
 		type = "uninitialised";
 		name = "uninitialised";
@@ -24,7 +24,7 @@ class AST {
 	}
 
 
-    void traverse(Node* node=NULL, AST* ast=NULL){
+    void traverse(Node* node=NULL){
         if (node == NULL) {
 			node = root;
 		}
@@ -59,6 +59,7 @@ class AST {
             child = "variables: ";
 			auto i = node->children.begin();
 			type = (*i)->value;
+
         }else if (node->type == "Parameter") {
 			lineno = node->lineno;
 			auto i = node->children.begin();
@@ -72,15 +73,15 @@ class AST {
         if (scope == "global" || scope == "class" || scope == "method") {
 			for (auto i = node->children.begin(); i != node->children.end(); i++) {
 				if ((*i)->type == "MethodDeclaration" || (*i)->type == "ClassDeclaration" || (*i)->type == "Parameter") {
-					AST* child = new AST();
+					ST* child = new ST();
 					children.push_back(child);
-					child->traverse(*i, this);
+					child->traverse(*i);
 				}
 			}
 		}
     }
     
-	void generateDOT(AST* node, ofstream &out, const string& inputFilename) {
+	void generateDOT(ST* node, ofstream &out, const string& inputFilename) {
 		if (!node) return;
 	
 		// Generate label with parent name and children inside it (for non-variable nodes)
@@ -123,54 +124,12 @@ class AST {
 		out.close();
 	}
 
-	// type of name
-	string lookup(string name, string class_name = "", string method_name = "") {
-		string type = "not found";
-		for (auto i = children.begin(); i != children.end(); i++) {
-			if((*i)->name == class_name){
-				for (auto j = (*i)->children.begin(); j != (*i)->children.end(); j++) {  // each element method or variable
-					if ((*j)->name == method_name) {
-						for (auto k = (*j)->children.begin(); k != (*j)->children.end(); k++) {
-							if ((*k)->name == name) {
-								type = (*k)->type;
-								return type;
-							}
-						}
-					}					
-					if ((*j)->name == name) {
-						type = (*j)->type;
-						return type;
-					}
-				}
-			}
-			if (class_name == "" && method_name == "") {
-				if ((*i)->name == name) {
-					type = (*i)->type;
-					return type;
-				}
-				for (auto j = (*i)->children.begin(); j != (*i)->children.end(); j++) {
-					for (auto k = (*j)->children.begin(); k != (*j)->children.end(); k++) {
-						if ((*k)->name == name) {
-							type = (*k)->type;
-							return type;
-						}
-					}
-					if ((*j)->name == name) {
-						type = (*j)->type;
-						return type;
-					}
-				}
-			}
-		}
-		return type;
-	}
-
-	AST* find(string name, string scope) {
+	ST* find(string name, string scope) {
 		for (auto i = children.begin(); i != children.end(); i++) {
 			if ((*i)->name == name && (*i)->scope == scope) {
 				return *i; 
 			}
-			AST* node = (*i)->find(name, scope);
+			ST* node = (*i)->find(name, scope);
 			if (node) {
 				return node;
 			}
