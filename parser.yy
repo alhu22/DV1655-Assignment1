@@ -127,6 +127,7 @@ statement:  LBRACE statement_list RBRACE {
                 $$->children.push_back($3);  // Array index
                 $$->children.push_back($6);  // Assigned value
             }
+            
         ;
         
 MainClass:

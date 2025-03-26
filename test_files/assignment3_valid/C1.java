@@ -11,8 +11,7 @@ class Sum {
     while (0 < num) {
       if (sum < 100) {
         sum = sum + num;
-      } else {
-      }
+      } else 
       num = num - 1;
     }
     return sum;

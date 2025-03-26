@@ -8,6 +8,7 @@ class A {
 
     public A a1(int num) {
         int num_aux;
+        num_aux = 2 + 3 * 1 - 4;
         if (num < 1)
             num_aux = 1;
         else
@@ -35,7 +36,7 @@ class A {
         int[] ia;
         i = this.a5(false, i, ia, this);
 
-        return new A();
+        return new A(); 
     }
 
     public int a5(boolean a, int b, int[] c, A d) {

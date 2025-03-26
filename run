@@ -1,4 +1,0 @@
-make clean
-make
-./compiler test_files/valid/SemanticValidMethodCall.java
-make cfg

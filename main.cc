@@ -3,6 +3,7 @@
 #include "symbolTable.h"
 #include "semanticAnalys.h"
 #include "tac.h"
+#include "generate.h"
 
 
 extern Node *root;
@@ -79,7 +80,11 @@ int main(int argc, char **argv)
 
 				// Three Address Code
 				CFG* cfg = new CFG();
-				cfg->traverse(root, st);
+				list<BBlock *> methodBlocks = cfg->build_cfg(root, st);
+				
+				GENERATE* generate = new GENERATE();
+				generate->loopBlocks(methodBlocks);
+
 
 			}
 
