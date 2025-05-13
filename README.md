@@ -17,8 +17,11 @@ This is a simple compiler project designed to read Java source files, perform le
    make
 
 ## Usage
-**Run the compiler on a Java file (e.g., E.java) from the test_files/assignment3_valid/ directory:
+Run the compiler on a Java file (e.g., E.java) from the test_files/assignment3_valid/ directory:
 ```bash
   ./compiler test_files/assignment3_valid/E.java
+  touch out.bc
+
+
 
 
