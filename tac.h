@@ -247,6 +247,8 @@ public:
         string op = node->value;
         string rhs;
         string lhs;
+
+        // first term
         auto it = node->children.begin();
         if ((*it)->type.find("Expression") != string::npos){
             lhs = expression(*it, block, classSt);
@@ -264,7 +266,9 @@ public:
             lhs = (*it)->value;
         }
 
-        if ((*(++it))->type.find("Expression") != string::npos){
+        // second term
+        it++;
+        if ((*it)->type.find("Expression") != string::npos){
             rhs = expression(*it, block, classSt);
         }else if ((*it)->type == "MethodCall"){
             method_call(*it, block, classSt);
@@ -288,25 +292,24 @@ public:
         lhs = (*it)->value;  
         it++;
 
-        if (node->children.size()==2){
-            if ((*it)->type == "Identifier" || (*it)->type == "int" || (*it)->type == "boolean")
-                block->instructions.push_back(new Copy((*it)->value, lhs));
+        // if (node->children.size()==2){
+        if ((*it)->type == "Identifier" || (*it)->type == "int" || (*it)->type == "boolean")
+            block->instructions.push_back(new Copy((*it)->value, lhs));
 
-            else if ((*it)->type.find("Expression") != string::npos)
-                expression(*it, block, classSt);
+            // else if ((*it)->type.find("Expression") != string::npos)
+            //     expression(*it, block, classSt);
 
             // if ((*it)->type == "LogicalNot"){
             //     block->instructions.push_back(new LogicalNot("!", (*it)->children.front()->value, "result"));
             //     block->instructions.push_back(new Copy("result", lhs));
             // }
             
-        }
-        if ((*it)->type == "ArrayAccess"){
+        // }
+        else if ((*it)->type == "ArrayAccess"){
             string array = (*it)->children.front()->value;
             string index = (*it)->children.back()->value;
             block->instructions.push_back(new Copy(array + "[" + index + "]", lhs));
-        }
-        if (node->type == "ArrayAssignment"){
+        }else if (node->type == "ArrayAssignment"){
             auto it = node->children.begin();
             string array = (*it)->value;
             string index = (*(++it))->value;
@@ -316,19 +319,18 @@ public:
             else
                 value = (*it)->value;
             block->instructions.push_back(new Copy(value, array + "[" + index + "]"));
-        }
-        if ((*it)->type == "Object_Instantiation"){
+        }else if ((*it)->type == "Object_Instantiation"){
             string type = (*it)->children.front()->value;
             block->instructions.push_back(new Copy("new " + type, lhs));
         }
-        if ((*it)->type == "    "){
-            string size = (*it)->children.back()->value;
-            block->instructions.push_back(new Copy("new , " + size , lhs));
-        }
-        if ((*it)->type.find("Expression") != string::npos){
+        // if ((*it)->type == "    "){   
+        //     string size = (*it)->children.back()->value;
+        //     block->instructions.push_back(new Copy("new , " + size , lhs));
+        // }
+        else if ((*it)->type.find("Expression") != string::npos){
             expression(*it, block, classSt);
-        }
-        if ((*it)->type == "MethodCall"){
+            block->instructions.back()->result = lhs; 
+        }else if ((*it)->type == "MethodCall"){
             method_call(*it, block, classSt);
             block->instructions.back()->result = lhs;
         }     
@@ -348,9 +350,12 @@ public:
         for (int i = 0; i < n_parameters; i++){
             if ((*it)->type == "MethodCall"){
                 method_call(*it, block, classSt);
-            } else if ((*it)->type == "Identifier" || (*it)->type == "int" || (*it)->type == "boolean"){
+            }else if ((*it)->type == "Identifier" || (*it)->type == "int" || (*it)->type == "boolean"){
                 block->instructions.push_back(new Param("param", (*it)->value));
-            } 
+            }else if ((*it)->type.find("Expression") != string::npos){
+                string result = expression(*it, block, classSt);
+                block->instructions.push_back(new Param("param", result));
+            }
         }
 
         if (object->type == "Object_Instantiation"){
@@ -388,36 +393,36 @@ public:
         expressionBlock->name = genBlockName();
         block1->trueExit = expressionBlock;
         block1->instructions.push_back(new Jump("goto", expressionBlock->name));
-        
         auto expression = node->children.begin();
-        string op = (*expression)->value;
-        auto it = (*expression)->children.begin();
+        string op = (*expression)->value;       // operator are  < > && || ==
+        auto it = (*expression)->children.begin();    // it is the first child of expression
+
         BBlock *tBlock = new BBlock();
         tBlock->name = genBlockName();
-        
         BBlock *fBlock = new BBlock();
         fBlock->name = genBlockName();
         BBlock *joinBlock = new BBlock();
         joinBlock->name = genBlockName();
-        string expr = this->expression(*expression, expressionBlock, classSt);
+
+        string expr = this->expression(*expression, expressionBlock, classSt);  // expression result
         expressionBlock->instructions.push_back(new CondictionalJump("iffalse goto", expr, fBlock->name));
         expressionBlock->trueExit = tBlock;
         expressionBlock->falseExit = fBlock;
-        Node* trueNode = *(++expression);
-        if (trueNode->type == "Block"){
-            for (auto ifInstance = trueNode->children.begin(); ifInstance != trueNode->children.end(); ifInstance++)   //children of methods
+        Node* ifNode = *(++expression); // ifNode is the second child of if statement
+        if (ifNode->type == "Block"){
+            for (auto ifInstance = ifNode->children.begin(); ifInstance != ifNode->children.end(); ifInstance++)   //children of methods
                 tBlock = runMethodBody(*ifInstance, tBlock, classSt);
         }else
-            tBlock = runMethodBody(trueNode, tBlock, classSt);
+            tBlock = runMethodBody(ifNode, tBlock, classSt);
 
         tBlock->trueExit = joinBlock;
         tBlock->instructions.push_back(new Jump("goto", joinBlock->name));
-        Node* falseNode = *(++expression);
-        if (falseNode->type == "Block"){
-            for (auto ifInstance = falseNode->children.begin(); ifInstance != falseNode->children.end(); ifInstance++)   //children of methods
+        Node* elseNode = *(++expression);
+        if (elseNode->type == "Block"){
+            for (auto ifInstance = elseNode->children.begin(); ifInstance != elseNode->children.end(); ifInstance++)   //children of methods
                 fBlock = runMethodBody(*ifInstance, fBlock, classSt);
         }else
-            fBlock = runMethodBody(falseNode, fBlock, classSt);
+            fBlock = runMethodBody(elseNode, fBlock, classSt);
         fBlock->trueExit = joinBlock; 
         fBlock->instructions.push_back(new Jump("goto", joinBlock->name));
       
@@ -485,7 +490,7 @@ public:
         if (node->type == "Print_Statement")
             printStatment(node, block, classSt);
         
-        if (node->type == "IfStatement"){
+        if (node->type == "IfStatement" ){
             block = ifStatement(node, block, classSt);
         }
         if (node->type == "WhileStatement"){
@@ -505,6 +510,10 @@ public:
                 block->instructions.push_back(new Return("return", (*it)->value));
             else if ((*it)->type == "Print_Statement")
                 block->instructions.push_back(new Print("print", (*it)->value));
+            else if ((*it)->type.find("Expression") != string::npos){
+                string result = expression(*it, block, classSt);    
+                block->instructions.push_back(new Return("return", result));
+            }
         }
     
         return block;

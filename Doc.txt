@@ -1,0 +1,17 @@
+build_cfg:
+    loop throw root for each class.
+    take the class object and symbol table of the same class.
+    for every class it loop throw methods.
+        new blockmethod:
+            name = className.methodName
+
+        for each method member we run runMethodBody wich take the member, new blockmethod and class symbol Table:
+            node = current member we want to handle
+            block = new blockmethod
+            if we have a list of statements then we have Block.
+            for each statement we run the runMethodBody and give it the block member.
+
+            if we have IfStatement:
+                if expr is false jump to false block  
+
+

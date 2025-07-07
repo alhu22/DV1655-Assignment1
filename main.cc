@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 				// root->print_tree();
 				root->generate_tree();
 				ST *st = new ST(-1, "Goal", "root", "global", "classes: ", root);
-				st->traverse();
+				st->traverse(); // build the symbol table
 				
 				// Semantic Analysis
 				Check *check = new Check(st, root);

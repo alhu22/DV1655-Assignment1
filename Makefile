@@ -13,6 +13,10 @@ st:
 cfg: 
 		 dot -Tpdf cfg.dot -ocfg.pdf
 
+interprete: interpreter.cpp
+		g++ -std=c++17 -o interpreter interpreter.cpp
+		./interpreter
+
 clean:
-		rm -f parser.tab.* lex.yy.c* compiler stack.hh position.hh location.hh tree.dot tree.pdf symbolTable.pdf symbol_tree.dot out.bc
+		rm -f parser.tab.* lex.yy.c* compiler stack.hh position.hh location.hh tree.dot tree.pdf symbolTable.pdf symbol_tree.dot out.bc interpreter
 		rm -R compiler.dSYM
