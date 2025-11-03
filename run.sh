@@ -1,6 +1,4 @@
 make clean
 make
-./compiler test_files/assignment3_valid/E.java
-make tree
+./compiler test_files/assignment3_valid/CFG.java
 make cfg
-make st

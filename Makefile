@@ -18,5 +18,5 @@ interprete: interpreter.cpp
 		./interpreter
 
 clean:
-		rm -f parser.tab.* lex.yy.c* compiler stack.hh position.hh location.hh tree.dot tree.pdf symbolTable.pdf symbol_tree.dot out.bc interpreter
+		rm -f parser.tab.* lex.yy.c* compiler stack.hh position.hh location.hh tree.dot tree.pdf symbolTable.pdf symbol_tree.dot out.bc interpreter cfg.dot cfg.pdf
 		rm -R compiler.dSYM

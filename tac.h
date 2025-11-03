@@ -5,7 +5,7 @@
 
 using namespace std;
 
-class Tac {
+class Tac {   
     public:
         string op, lhs, rhs, result;
     
@@ -25,7 +25,8 @@ class Tac {
         virtual ~Tac() {} // Ensure proper cleanup when deleting derived objects
 
     };
- 
+
+
 class Expression : public Tac {
     private:
         map<string, string> boolien = {
@@ -33,126 +34,126 @@ class Expression : public Tac {
             {"false", "0"}
         };
 
-public:
-    Expression(string _op, string _lhs, string _rhs, string _result)
-        : Tac(_op, _lhs, _rhs, _result) {}
+    public:
+        Expression(string _op, string _lhs, string _rhs, string _result)
+            : Tac(_op, _lhs, _rhs, _result) {}
 
-    string generate_code() override {
-        string out;
+        string generate_code() override {
+            string out;
 
-        if (isdigit(lhs[0]))
-            out += "   iconst " + lhs + "\n";
-        else if (lhs == "true" || lhs == "false")
-            out += "   iconst " + boolien[lhs] + "\n";
-        else
-            out += "   iload " + lhs + "\n";
+            if (isdigit(lhs[0]))
+                out += "   iconst " + lhs + "\n";
+            else if (lhs == "true" || lhs == "false")
+                out += "   iconst " + boolien[lhs] + "\n";
+            else
+                out += "   iload " + lhs + "\n";
 
-        if (isdigit(rhs[0]))
-            out += "   iconst " + rhs + "\n";
-        else if (rhs == "true" || rhs == "false")
-            out += "   iconst " + boolien[rhs] + "\n";
-        else
-            out += "   iload " + rhs + "\n";
+            if (isdigit(rhs[0]))
+                out += "   iconst " + rhs + "\n";
+            else if (rhs == "true" || rhs == "false")
+                out += "   iconst " + boolien[rhs] + "\n";
+            else
+                out += "   iload " + rhs + "\n";
 
+                
+            if (op == "+")
+                out += "   iadd\n";
+            if (op == "-")
+                out += "   isub\n";
+            if (op == "*")
+                out += "   imul\n";
+            if (op == "<")
+                out += "   ilt\n";
+            if (op == ">")
+                out += "   igt\n";
+            if (op == "&&")
+                out += "   iand\n";
+            if (op == "||")
+                out += "   ior\n";
+            if (op == "==")
+                out += "   ieq\n";
             
-        if (op == "+")
-            out += "   iadd\n";
-        if (op == "-")
-            out += "   isub\n";
-        if (op == "*")
-            out += "   imul\n";
-        if (op == "<")
-            out += "   ilt\n";
-        if (op == ">")
-            out += "   igt\n";
-        if (op == "&&")
-            out += "   iand\n";
-        if (op == "||")
-            out += "   ior\n";
-        if (op == "==")
-            out += "   ieq\n";
-        
-        
-        out += "   istore " + result + "\n";
-        
-        return out;
+            
+            out += "   istore " + result + "\n";
+            
+            return out;
 
-    }
+        }
 };
 
 class object_instantiation : public Tac {
-public:
-    object_instantiation(string _op, string _rhs)
-        : Tac(_op, "", _rhs, "") {}
+    public:
+        object_instantiation(string _op, string _rhs)
+            : Tac(_op, "", _rhs, "") {}
 
-    string generate_code() override {
-        return "   new " + rhs + "\n";
-    }
+        string generate_code() override {
+            return "   new " + rhs + "\n";
+        }
 };
 
 class Print : public Tac {
-public:
-    Print(string _op, string _result)
-        : Tac(_op, "", "", _result) {}  // Use empty strings for _lhs and _rhs
+    public:
+        Print(string _op, string _result)
+            : Tac(_op, "", "", _result) {}  // Use empty strings for _lhs and _rhs
 
-    string generate_code() override {
-        string out;
-        if (isdigit(result[0]))
-            out += "   iconst " + result + "\n";
-        else
-            out += "   iload " + result + "\n";
-        out += "   print\n";
-        return out;
-    }
+        string generate_code() override {
+            string out;
+            if (isdigit(result[0]))
+                out += "   iconst " + result + "\n";
+            else
+                out += "   iload " + result + "\n";
+            out += "   print\n";
+            return out;
+        }
 };
 
 class Jump : public Tac {
-public:
-    Jump(string _op, string _rhs)
-        : Tac(_op, "", _rhs, "") {}
+    public:
+        Jump(string _op, string _rhs)
+            : Tac(_op, "", _rhs, "") {}
 
-    string generate_code() override {
-        return "   " + op + " " + rhs + "\n";
-    }
+        string generate_code() override {
+            return "   " + op + " " + rhs + "\n";
+        }
 };
 
 class CondictionalJump : public Tac {
-public:
-    CondictionalJump(string _op, string _lhs, string _rhs)
-        : Tac(_op, "", _rhs, "") {
-            lhs = _lhs;
-        }
+    public:
+        CondictionalJump(string _op, string _lhs, string _rhs)
+            : Tac(_op, "", _rhs, "") {
+                lhs = _lhs;
+            }
 
-    string generate_code() override {
-        return "   iload " + lhs + "\n   " + op + " " + rhs + "\n";
-    }
+        string generate_code() override {
+            return "   iload " + lhs + "\n   " + op + " " + rhs + "\n";
+        }
 };
 
 
 class Param : public Tac {
-public:
-    Param(string _op, string _rhs)
-        : Tac(_op, "", _rhs, "") {}
+    public:
+        Param(string _op, string _rhs)
+            : Tac(_op, "", _rhs, "") {}
 
-    string generate_code() override {
-        string out;
-        if (isdigit(rhs[0]))
-            out += "   iconst " + rhs + "\n";
-        else
-            out += "   iload " + rhs + "\n";
+        string generate_code() override {
+            string out;
+            if (isdigit(rhs[0]))
+                out += "   iconst " + rhs + "\n";
+            else
+                out += "   iload " + rhs + "\n";
 
-        return out;
-    }
+            return out;
+        }
 };
 
 class MethodCall : public Tac {
-public:
-    MethodCall(string _op, string _rhs)
-        : Tac(_op, "", _rhs, "") {}
+    public:
+        MethodCall(string _op, string _rhs)
+            : Tac(_op, "", _rhs, "") {}
 
-    string generate_code() override {
-        return "   invokevirtual " + rhs.substr(0,rhs.find(",")) + "\n";
-    }
+        string generate_code() override {
+            return "   invokevirtual " + rhs.substr(0,rhs.find(",")) + "\n";
+        }
 };
 
 class LogicalNot : public Tac {
@@ -162,68 +163,68 @@ class LogicalNot : public Tac {
             {"false", "0"}
         };
 
-public:
-    LogicalNot(string _op, string _rhs, string _result)
-        : Tac(_op, "", _rhs, _result) {}
-    
-    string generate_code() override {
-        return "   iconst " + boolien[rhs] + "\n   istore " + result + "\n";
-    }
+    public:
+        LogicalNot(string _op, string _rhs, string _result)
+            : Tac(_op, "", _rhs, _result) {}
+        
+        string generate_code() override {
+            return "   iconst " + boolien[rhs] + "\n   istore " + result + "\n";
+        }
 };
 
 class Return : public Tac {
-public:
-    Return(string _op, string _rhs)
-        : Tac(_op, "", _rhs, "") {}
+    public:
+        Return(string _op, string _rhs)
+            : Tac(_op, "", _rhs, "") {}
 
-    string generate_code() override {
-        string out;
-        if (isdigit(rhs[0]))
-            out += "   iconst " + rhs + "\n";
-        else
-            out += "   iload " + rhs + "\n";
-        out += "   ireturn\n";
-        return out;
-    }
+        string generate_code() override {
+            string out;
+            if (isdigit(rhs[0]))
+                out += "   iconst " + rhs + "\n";
+            else
+                out += "   iload " + rhs + "\n";
+            out += "   ireturn\n";
+            return out;
+        }
 };
 
 class Copy : public Tac {
-public:
-    Copy(string _y, string _result)
-        : Tac("", _y, "", _result) {}
-    
-    string generate_code() override {
-        string out;
-        if (isdigit(lhs[0]))
-            out += "   iconst " + lhs + "\n";
-        else
-            out += "   iload " + lhs + "\n";
-        out += "   istore " + result + "\n";
-        return out;
-    }
+    public:
+        Copy(string _y, string _result)
+            : Tac("", _y, "", _result) {}
+        
+        string generate_code() override {
+            string out;
+            if (isdigit(lhs[0]))
+                out += "   iconst " + lhs + "\n";
+            else
+                out += "   iload " + lhs + "\n";
+            out += "   istore " + result + "\n";
+            return out;
+        }
 };
 
 class BBlock {
-public:
-    string name;
-    list<Tac*> instructions;
-    Tac condition;
-    BBlock *trueExit = nullptr;
-    BBlock *falseExit = nullptr;
-    BBlock() : trueExit(nullptr), falseExit(nullptr) {}
-    
-    ~BBlock() {
-        for (auto &inst : instructions) {
-            delete inst;
+    public:
+        string name;
+        list<Tac*> instructions;
+        Tac condition;
+        BBlock *trueExit = nullptr;
+        BBlock *falseExit = nullptr;
+        BBlock() : trueExit(nullptr), falseExit(nullptr) {}
+        
+        ~BBlock() {
+            for (auto &inst : instructions) {
+                delete inst;
+            }
+            instructions.clear();
         }
-        instructions.clear();
-    }
 
-    void dump() {
-        printf("%s:\n", name.c_str());
-        for (auto &i : instructions) {
-            i->dump();
-        }
+        void dump() {
+            printf("%s:\n", name.c_str());
+            for (auto &i : instructions) {
+                i->dump();
+            }
     }
 };
 
@@ -238,8 +239,8 @@ string genBlockName() {
 
 
 class CFG {
-private:
-    list<BBlock *> methodBlocks;
+    private:
+        list<BBlock *> methodBlocks;
 
 public:
 
@@ -259,8 +260,13 @@ public:
             lhs = "result";
         
         }else if ((*it)->type == "LogicalNot"){
-            block->instructions.push_back(new LogicalNot("!", (*(*it)->children.begin())->value, "result"));
-            lhs = "result";
+            string expresion_result;
+            if ((*(*it)->children.begin())->type.find("Expression") != string::npos)
+                expresion_result = expression(*(*it)->children.begin(), block, classSt);
+            else
+                expresion_result = (*(*it)->children.begin())->value;
+            lhs = genName();
+            block->instructions.push_back(new LogicalNot("!", expresion_result, lhs));
 
         }else{
             lhs = (*it)->value;
@@ -275,7 +281,18 @@ public:
             block->instructions.back()->result = "result";
             rhs = "result";
 
-        }else{
+        }else if ((*it)->type == "LogicalNot"){
+            string expresion_result;
+            if ((*(*it)->children.begin())->type.find("Expression") != string::npos)
+                expresion_result = expression(*(*it)->children.begin(), block, classSt);
+            else
+                expresion_result = (*(*it)->children.begin())->value;
+
+            rhs = genName();
+            block->instructions.push_back(new LogicalNot("!", expresion_result, rhs));
+        }
+        
+        else{
             rhs = (*it)->value;
         }
 
@@ -285,7 +302,7 @@ public:
         return result;
     }
  
-    void assignmentBlock(Node* node, BBlock* block, ST* classSt){
+    void assignmentBlock(Node* node, BBlock* block, ST* classSt){ // doesn't return any block
         string lhs, rhs;
         auto it = node->children.begin();
 
@@ -339,15 +356,15 @@ public:
     MethodCall* method_call(Node* node, BBlock* block, ST* classSt){
         auto method = node->children.begin();
         Node * object = *(++method);
-        method--;
+        method--;   // first child is method name, second is object
         
-        int n_parameters = node->children.size() - 2;
-        MethodCall* right = new MethodCall("call", "");
+        int n_parameters = node->children.size() - 2;  // - object, method 
+        MethodCall* right = new MethodCall("call", "");  // create three address code
         right->rhs = to_string(n_parameters);    
         
         auto it = node->children.begin();
         advance(it, 2);
-        for (int i = 0; i < n_parameters; i++){
+        for (int i = 0; i < n_parameters; i++){      // handle parameters
             if ((*it)->type == "MethodCall"){
                 method_call(*it, block, classSt);
             }else if ((*it)->type == "Identifier" || (*it)->type == "int" || (*it)->type == "boolean"){
@@ -356,6 +373,7 @@ public:
                 string result = expression(*it, block, classSt);
                 block->instructions.push_back(new Param("param", result));
             }
+            it++;
         }
 
         if (object->type == "Object_Instantiation"){
@@ -388,14 +406,14 @@ public:
         return right;
     }
 
-    BBlock* ifStatement(Node* node, BBlock* block1, ST* classSt){
+    BBlock* ifStatement(Node* node, BBlock* block1, ST* classSt){ // code, current block, symbol table
         BBlock* expressionBlock = new BBlock();
         expressionBlock->name = genBlockName();
         block1->trueExit = expressionBlock;
         block1->instructions.push_back(new Jump("goto", expressionBlock->name));
         auto expression = node->children.begin();
-        string op = (*expression)->value;       // operator are  < > && || ==
-        auto it = (*expression)->children.begin();    // it is the first child of expression
+        // string op = (*expression)->value;       // operator are  < > && || ==
+        // auto it = (*expression)->children.begin();    // it is the first child of expression
 
         BBlock *tBlock = new BBlock();
         tBlock->name = genBlockName();
@@ -404,10 +422,15 @@ public:
         BBlock *joinBlock = new BBlock();
         joinBlock->name = genBlockName();
 
-        string expr = this->expression(*expression, expressionBlock, classSt);  // expression result
+        string expr;
+        if ((*expression)->type == "Identifier")
+            expr = (*expression)->value;
+        else
+            expr = this->expression(*expression, expressionBlock, classSt);  // expression result
         expressionBlock->instructions.push_back(new CondictionalJump("iffalse goto", expr, fBlock->name));
         expressionBlock->trueExit = tBlock;
         expressionBlock->falseExit = fBlock;
+
         Node* ifNode = *(++expression); // ifNode is the second child of if statement
         if (ifNode->type == "Block"){
             for (auto ifInstance = ifNode->children.begin(); ifInstance != ifNode->children.end(); ifInstance++)   //children of methods
@@ -435,9 +458,10 @@ public:
         block1->trueExit = expressionBlock;
         block1->instructions.push_back(new Jump("goto", expressionBlock->name));
         auto expression = node->children.begin();
-        string op = (*expression)->value;
-        auto it = (*expression)->children.begin();
-        BBlock *body = new BBlock();
+        // string op = (*expression)->value;
+        // auto it = (*expression)->children.begin();
+
+        BBlock *body = new BBlock();  // if while is true
         body->name = genBlockName();
         
         BBlock *joinBlock = new BBlock();
@@ -448,16 +472,13 @@ public:
         expressionBlock->trueExit = body;
         expressionBlock->falseExit = joinBlock;
 
-        if ((*(++expression))->type != "Block" )
-            body = runMethodBody(*expression, body, classSt);
-
-        for (auto whileInstance = (*expression)->children.begin(); whileInstance != (*expression)->children.end(); whileInstance++) {   //children of methods
+        for (auto whileInstance = (*(++expression))->children.begin(); whileInstance != (*expression)->children.end(); whileInstance++) {   //body of whileloop
             body = runMethodBody(*whileInstance, body, classSt);
         }
 
-        body->trueExit = expressionBlock;
+        body->trueExit = expressionBlock;  // ** go back to expression 
 
-        return joinBlock;
+        return joinBlock;  
     }
 
     void printStatment(Node* node, BBlock* block, ST* classSt){
@@ -469,11 +490,13 @@ public:
         }else if ((*print)->type.find("Expression") != string::npos){
             string result = expression(*print, block, classSt);
             block->instructions.push_back(new Print("print", result));
+        }else if ((*print)->type == "Identifier" || (*print)->type == "int" || (*print)->type == "boolean"){
+            block->instructions.push_back(new Print("print", (*print)->value));
         }
     }
 
-    BBlock* runMethodBody(Node* node, BBlock* block, ST* classSt){
-        if (node->type == "Block"){
+    BBlock* runMethodBody(Node* node, BBlock* block, ST* classSt){  // code, new block, symbol table
+        if (node->type == "Block"){   // E.java, have two print in a body
             for (auto blockInstance = node->children.begin(); blockInstance != node->children.end(); blockInstance++) {   //children of methods
                 block = runMethodBody(*blockInstance, block, classSt);
             }
@@ -519,12 +542,12 @@ public:
         return block;
     }
 
-    list<BBlock *> build_cfg(Node* node, ST* St){
+    list<BBlock *> build_cfg(Node* node, ST* St){  // node is the root of code
         int classIndex = 0;
         for (auto cls = node->children.begin(); cls != node->children.end(); cls++) {   // each element class
-            auto it = St->children.begin();          // store class symboltalbe
+            auto it = St->children.begin();          
             advance(it, classIndex);
-            ST* classSt = *it;
+            ST* classSt = *it;      // cls is the code class, classSt is symbol table of the class
             classIndex++;
             for (auto clsInstance = (*cls)->children.begin(); clsInstance !=(*cls)->children.end(); clsInstance++) {  // each element clsInstance or variable
                 if ((*clsInstance)->type == "MethodDeclaration"){ 
@@ -537,7 +560,7 @@ public:
                 }
             }
         }
-        writeDotFile();
+        writeDotFile();   // generate dot file for CFG visualization
         return methodBlocks;
     }
 
@@ -604,3 +627,4 @@ public:
     }
 
 };
+

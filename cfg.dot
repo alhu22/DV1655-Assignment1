@@ -1,5 +1,0 @@
-digraph {
-graph [splines=ortho]
-node [shape=box]
-    E_main [label="E_main\n :=  param a\n_t0 := 4 * 2\n_t1 := _t0 + 10\n_t2 := 2 * 6\n_t3 := _t1 - _t2\n_t4 := 4 - 1\n_t5 := _t4 * 2\n_t6 := _t5 * 2\n_t7 := _t3 + _t6\n_t7 :=  print \nresult :=  ! true\n_t8 := result && false\n_t9 := true == _t8\n_t10 := 10 > 1\n_t11 := _t9 || _t10\n_t12 := 1 < 10\n_t13 := _t11 && _t12\n_t13 :=  print \n"];
-}
